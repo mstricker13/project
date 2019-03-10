@@ -6,7 +6,7 @@ badStuff: A tutorial I tried out at first, but it wasn't good enough to build up
 
 torchImpl: A better LSTM for Seq2Seq machine translation but uses torch
 
-kerasImpl: A Goal be a keras implementation of torchImpl
+kerasImpl: Should be a keras implementation of torchImpl
 
 
 ## To do:

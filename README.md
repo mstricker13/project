@@ -17,4 +17,5 @@ kerasImpl: Should be a keras implementation of torchImpl
   * add teacher enforcing
   * add bidirection
   * make sure to use same loss functions for comparability
-* Change keras implementation so that it accepts sentences of any length. Right now a memory error appears which needs to be fixed.
+* Change keras implementation so that it accepts sentences of any length. Right now a memory error appears which needs to be fixed. (Probably needs to change one hot encoding to word embedding)
+* Try to solve the runtime error regarding the allocation failure with cublas (low priority, not necessary)

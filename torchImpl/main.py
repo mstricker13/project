@@ -30,22 +30,27 @@ if __name__ == '__main__':
     dec = network.Decoder(OUTPUT_DIM, DEC_EMB_DIM, HID_DIM, N_LAYERS, DEC_DROPOUT)
     model = network.Seq2Seq(enc, dec, device).to(device)
     print(f'The model has {network.count_parameters(model):,} trainable parameters')
+    print(model)
+    print(enc)
+    print(dec)
 
     #define parameters for training
     optimizer = optim.Adam(model.parameters())
     pad_idx = TRG.vocab.stoi['<pad>']
     criterion = nn.CrossEntropyLoss(ignore_index=pad_idx)
 
-    N_EPOCHS = 10
+    N_EPOCHS = 30
     CLIP = 1
     SAVE_DIR = 'models'
     MODEL_SAVE_PATH = os.path.join(SAVE_DIR, 'tut1_model.pt')
 
     #start training
-    #training.start_training(SAVE_DIR, MODEL_SAVE_PATH, N_EPOCHS, model, train_iterator, valid_iterator,optimizer,
-                            #criterion, CLIP)
+    training.start_training(SAVE_DIR, MODEL_SAVE_PATH, N_EPOCHS, model, train_iterator, valid_iterator,optimizer,
+                            criterion, CLIP)
 
     #evaluate trained model
     model.load_state_dict(torch.load(MODEL_SAVE_PATH))
     test_loss = training.evaluate(model, test_iterator, criterion)
     print(f'| Test Loss: {test_loss:.3f} | Test PPL: {math.exp(test_loss):7.3f} |')
+
+    #Test Loss after 30 Epochs: 3.331

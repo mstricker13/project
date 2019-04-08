@@ -2,6 +2,8 @@ from torchtext.datasets import TranslationDataset, Multi30k
 from torchtext.data import Field, BucketIterator
 
 import spacy
+import sys
+import string
 
 
 # load language models
@@ -26,7 +28,16 @@ def tokenize_en(text):
 def load_Data(SRC, TRG):
     # get the data
     train_data, valid_data, test_data = Multi30k.splits(exts=('.de', '.en'), fields=(SRC, TRG))
+    table = str.maketrans('', '', string.punctuation)
     print(f"Number of training examples: {len(train_data.examples)}")
+    #print('LOOOOK HEEERRREE')
+    #trg = vars(train_data.examples[0])
+    #trg = trg['trg']
+    #trg = [word.translate(table) for word in trg]
+    #trg = [x for x in trg if x != '']
+    #if len(trg) <= 10:
+        #remove
+    #sys.exit()
     print(f"Number of validation examples: {len(valid_data.examples)}")
     print(f"Number of testing examples: {len(test_data.examples)}")
     print(vars(train_data.examples[0]))

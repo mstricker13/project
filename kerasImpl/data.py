@@ -7,7 +7,7 @@ from numpy import array, append
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils import to_categorical
-
+import numpy as np
 
 def createPklFile(location):
     """
@@ -29,19 +29,22 @@ def createPklFile(location):
     doctestEn = load_doc(testEnLoc)
     docvalEn = load_doc(valEnLoc)
 
-    testPair = clean_pairs(to_pairs(doctestDe, doctestEn))
-    trainPair = clean_pairs(to_pairs(doctrainDe, doctrainEn))
-    valPair = clean_pairs(to_pairs(docvalDe, docvalEn))
+    testPair = clean_pairs(to_pairs(doctestEn, doctestDe))
+    trainPair = clean_pairs(to_pairs(doctrainEn, doctrainDe))
+    valPair = clean_pairs(to_pairs(docvalEn, docvalDe))
 
     traintestPair = append(trainPair, testPair, axis=0)
+    allPair = append(trainPair, testPair, axis=0)
+    allPair = append(allPair, valPair, axis=0)
 
     save_clean_data(testPair, os.path.join(location, 'test.pkl'))
     save_clean_data(trainPair, os.path.join(location, 'train.pkl'))
     save_clean_data(traintestPair, os.path.join(location, 'traintest.pkl'))
+    save_clean_data(allPair, os.path.join(location, 'allData.pkl'))
     save_clean_data(valPair, os.path.join(location, 'val.pkl'))
 
-    for i in range(10):
-        print('[%s] => [%s]' % (traintestPair[i, 0], traintestPair[i, 1]))
+    #for i in range(10):
+    #    print('[%s] => [%s]' % (traintestPair[i, 0], traintestPair[i, 1]))
 
 
 def load_doc(filename):
@@ -63,7 +66,12 @@ def to_pairs(doc1, doc2):
     pairs = list()
     for i in range(0, len(lines1)):
         #print(lines1[i])
-        if len(lines1[i]) < 50 or len(lines2[i]) < 50:
+        #TODO make possible for all lengths, right now sentence length in english is maximum 10
+        if len(lines1[i].split(' ')) <= 10: #or len(lines2[i].split(' ')) < 10:
+            #reverse german sentence since pytorch implementation does that
+            tmp = lines2[i].split(' ')
+            tmp.reverse()
+            lines2[i] = ' '.join(tmp)
             pairs.append([lines1[i], lines2[i]])
     #pairs = [[lines1[i], lines2[i]] for i in range(0, len(lines1))]
     #print(array(pairs[0]))
@@ -72,7 +80,7 @@ def to_pairs(doc1, doc2):
 
 def clean_pairs(lines):
     """
-    cleans the lines by removing all non-printable charactersa and all punctuation characters.
+    cleans the lines by removing all non-printable characters and all punctuation characters.
     Normalizes all Unicode characters to ASCII (e.g. Latin characters).
     Normalizes uppercase to lowercase.
     Remove any remaining tokens that are not alphabetic.
@@ -116,28 +124,49 @@ def load_clean_sentences(filename):
 def create_tokenizer(lines):
     tokenizer = Tokenizer()
     tokenizer.fit_on_texts(lines)
-    return tokenizer
 
+    #remove words which appear once, to be close to the pytorch implementation
+    # 4717 --> 2558, 6775 --> 2828
+    #count_thres = 2
+    #low_count_words = [w for w, c in tokenizer.word_counts.items() if c < count_thres]
+    #print(tokenizer.texts_to_sequences(lines))
+    #for w in low_count_words:
+    #    del tokenizer.word_index[w]
+    #    del tokenizer.word_docs[w]
+    #    del tokenizer.word_counts[w]
+    #print(tokenizer.texts_to_sequences(lines))
+    return tokenizer
 
 def max_length(lines):
     return max(len(line.split()) for line in lines)
 
 
-def prepareData(dataset, train, test):
-    eng_tokenizer, eng_vocab_size, eng_length, ger_tokenizer, ger_vocab_size, ger_length = tokenize(dataset)
+def prepareData(dataset, train, test, val, allData):
+    #was previously on allData, but to recreate the pytorch network I am using the training data only. Prevents information leakage
+    eng_tokenizer, eng_vocab_size, eng_length, ger_tokenizer, ger_vocab_size, ger_length = tokenize(train)
     # prepare training data
     trainX = encode_sequences(ger_tokenizer, ger_length, train[:, 1])
     trainY = encode_sequences(eng_tokenizer, eng_length, train[:, 0])
     trainY = encode_output(trainY, eng_vocab_size)
-    # prepare validation data
+    # prepare testing data
     testX = encode_sequences(ger_tokenizer, ger_length, test[:, 1])
     testY = encode_sequences(eng_tokenizer, eng_length, test[:, 0])
     testY = encode_output(testY, eng_vocab_size)
-    return ger_vocab_size, eng_vocab_size, ger_length, eng_length, trainX, trainY, testX, testY, eng_tokenizer
+    # prepare validation data
+    valX = encode_sequences(ger_tokenizer, ger_length, val[:, 1])
+    valY = encode_sequences(eng_tokenizer, eng_length, val[:, 0])
+    valY = encode_output(valY, eng_vocab_size)
+    vocab_size = [ger_vocab_size, eng_vocab_size]
+    lang_length = [ger_length, eng_length]
+    all_data = [trainX, trainY, testX, testY, valX, valY]
+    return vocab_size, lang_length, all_data, eng_tokenizer
 
 
 def tokenize(dataset):
     # prepare english tokenizer
+    thresh = 2
+    #TODO why does it remove things even though if I rename dataset to tmp and do not use it anywhere
+    datasetTMP = remove_below_thresh(dataset, thresh)
     eng_tokenizer = create_tokenizer(dataset[:, 0])
     eng_vocab_size = len(eng_tokenizer.word_index) + 1
     eng_length = max_length(dataset[:, 0])
@@ -151,6 +180,55 @@ def tokenize(dataset):
     print('German Max Length: %d' % (ger_length))
     return eng_tokenizer, eng_vocab_size, eng_length, ger_tokenizer, ger_vocab_size, ger_length
 
+def remove_below_thresh(dataset, thresh):
+    eng = dataset[:, 0]
+    engDict = {}
+    engIgnore = []
+    for sentence in eng:
+        words = sentence.split(' ')
+        for word in words:
+            if word in engDict:
+                engDict[word] += 1
+            else:
+                engDict[word] = 1
+    for key in engDict:
+        if engDict[key] <= thresh:
+            engIgnore.append(key)
+    i = 0
+    while i < len(eng):
+        words = eng[i].split(' ')
+        for check in engIgnore:
+            if check in words:
+                eng[i] = eng[i].replace(" " + check + " ", " unk ")
+        i += 1
+    ger = dataset[:, 1]
+    gerDict = {}
+    gerIgnore = []
+    for sentence in ger:
+        words = sentence.split(' ')
+        for word in words:
+            if word in gerDict:
+                gerDict[word] += 1
+            else:
+                gerDict[word] = 1
+    for key in gerDict:
+        if gerDict[key] <= thresh:
+            gerIgnore.append(key)
+    i = 0
+    while i < len(ger):
+        words = ger[i].split(' ')
+        for check in gerIgnore:
+            if check in words:
+                ger[i] = ger[i].replace(" " + check + " ", " unk ")
+        i += 1
+
+    pair = list()
+    i = 0
+    while i < len(eng):
+        pair.append([eng[i], ger[i]])
+        i += 1
+    result = array(pair)
+    return result
 
 # encode and pad sequences
 def encode_sequences(tokenizer, length, lines):
@@ -172,17 +250,6 @@ def encode_output(sequences, vocab_size):
     return y
 
 
-# one hot encode target sequence
-def encode_output(sequences, vocab_size):
-    ylist = list()
-    for sequence in sequences:
-        encoded = to_categorical(sequence, num_classes=vocab_size)
-        ylist.append(encoded)
-    y = array(ylist)
-    y = y.reshape(sequences.shape[0], sequences.shape[1], vocab_size)
-    return y
-
-
 # map an integer to a word
 def word_for_id(integer, tokenizer):
     for word, index in tokenizer.word_index.items():
@@ -191,6 +258,7 @@ def word_for_id(integer, tokenizer):
     return None
 
 
-"TODO Same preprocessing -> see cleaning" \
-"Use validation set" \
-"change to pairs to accept sentences of any length and resolve the memory error"
+# Same preprocessing -> see cleaning -> done
+# Use validation set -> done
+# TODO change to pairs to accept sentences of any length and resolve the memory error
+# reverse input sentence

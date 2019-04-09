@@ -36,81 +36,60 @@ if __name__ == '__main__':
     vocab_size, lang_length, all_data, eng_tokenizer = data.prepareData(dataset, train, test, val, allData)
     ger_vocab_size, eng_vocab_size = vocab_size[0], vocab_size[1]
     ger_length, eng_length = lang_length[0], lang_length[1]
-    trainX, trainY, testX, testY, valX, valY = all_data[0], all_data[1], all_data[2], all_data[3], all_data[4], all_data[5]
+    trainX, trainY, testX, testY, valX, valY, trainY_shifted, valY_shifted, testY_shifted = \
+        all_data[0], all_data[1], all_data[2], all_data[3], all_data[4], all_data[5], all_data[6], all_data[7], all_data[8]
 
     # define model
     #model parameters
     N_UNITS = 512 #same as hidden dimension in torch
     DROPOUT = 0.5
     LATENT_DIM = 256
-    #13.898.501
     print('Define model')
-    model = network.define_model(ger_vocab_size, eng_vocab_size, ger_length, eng_length, N_UNITS, LATENT_DIM, DROPOUT)
+
+    #n_features = ger_vocab_size
+    #n_features2 = eng_vocab_size
+    #n_steps_in = ger_length
+    #n_steps_out = eng_length
+    #X1, X2, y = network.get_dataset(n_steps_in, n_steps_out, n_features, n_features2, 137)
+    #print(X1.shape)
+    #print(trainX.shape)
+    #print(X1[0])
+    #print(trainX[0])
+
+    #model = network.define_model(ger_vocab_size, eng_vocab_size, ger_length, eng_length, N_UNITS, LATENT_DIM, DROPOUT)
+    model, enc_inf, dec_inf = network.define_model_powerful(ger_vocab_size, eng_vocab_size, ger_length, eng_length, N_UNITS, LATENT_DIM, DROPOUT)
     model.compile(optimizer='adam', loss='categorical_crossentropy')
     # summarize defined model
     print(model.summary())
+    plot_model(model, to_file='model.png', show_shapes=True)
     #trainer, inf_encoder, inf_decoder = network.define_model_powerful(ger_vocab_size, eng_vocab_size, ger_length, eng_length, N_UNITS, LATENT_DIM, DROPOUT)
     #trainer.compile(optimizer='adam', loss='categorical_crossentropy')
     #print(trainer.summary())
 
     #plot_model(model, to_file='model.png', show_shapes=True)
     # fit model
-    filename = 'model.h5'
-    #filename = 'modelPowerful.h5'
+    filename = 'modelPowerful.h5'
     checkpoint = ModelCheckpoint(filename, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
     print('Train')
-    model.fit(trainX, trainY, epochs=30, batch_size=128, validation_data=(valX, valY), callbacks=[checkpoint], verbose=2)
-    #trainer.fit([trainX, trainY], epochs=3, batch_size=128, validation_data=(valX, valY), callbacks=[checkpoint], verbose=2)
+    #print(len(trainX))
+    #print(len(trainY[0]))
+    #print('----------------')
+    #print(trainY)
+    #if trainX has wrong shapes remove one hot encoding for it
+    #model.fit(trainX, trainY, epochs=30, batch_size=128, validation_data=(valX, valY), callbacks=[checkpoint], verbose=2)
+    model.fit([trainX, trainY_shifted], trainY, epochs=30, batch_size=128, validation_data=([valX, valY_shifted], valY),
+              callbacks=[checkpoint], verbose=2)
+    #print(X1.shape, X2.shape, y.shape)
+    #print(trainX.shape, trainY_shifted.shape, trainY.shape)
 
     #evaluate model
     #model = load_model('model.h5')
     print('Test')
     #network.evaluate_model(model, eng_tokenizer, testX, test)
-    scores = model.evaluate(testX, testY)
+    scores = model.evaluate([testX, testY_shifted], testY)
     print(scores)
     #network.evaluate_model(trainer, eng_tokenizer, testX, test)
     #translation = model.predict(source, verbose=0)
 
     #Test Loss after 30 epochs: 3.6736
-
-
-"""
-    #get iterators for data and vocabularies
-    BATCH_SIZE = 128
-    train_iterator, valid_iterator, test_iterator, SRC, TRG = data.startDataProcess(BATCH_SIZE, device)
-
-    #define parameters for model architecture
-    INPUT_DIM = len(SRC.vocab)
-    OUTPUT_DIM = len(TRG.vocab)
-    ENC_EMB_DIM = 256 ok
-    DEC_EMB_DIM = 256 ok
-    HID_DIM = 512 ok
-    N_LAYERS = 2 ok
-    ENC_DROPOUT = 0.5 ok
-    DEC_DROPOUT = 0.5 ok
-
-    #create encoder, decoder and seq2seq model
-    enc = network.Encoder(INPUT_DIM, ENC_EMB_DIM, HID_DIM, N_LAYERS, ENC_DROPOUT)
-    dec = network.Decoder(OUTPUT_DIM, DEC_EMB_DIM, HID_DIM, N_LAYERS, DEC_DROPOUT)
-    model = network.Seq2Seq(enc, dec, device).to(device)
-    print(f'The model has {network.count_parameters(model):,} trainable parameters')
-
-    #define parameters for training
-    optimizer = optim.Adam(model.parameters())
-    pad_idx = TRG.vocab.stoi['<pad>']
-    criterion = nn.CrossEntropyLoss(ignore_index=pad_idx)
-
-    N_EPOCHS = 10
-    CLIP = 1
-    SAVE_DIR = 'models'
-    MODEL_SAVE_PATH = os.path.join(SAVE_DIR, 'tut1_model.pt')
-
-    #start training
-    #training.start_training(SAVE_DIR, MODEL_SAVE_PATH, N_EPOCHS, model, train_iterator, valid_iterator,optimizer,
-                            #criterion, CLIP)
-
-    #evaluate trained model
-    model.load_state_dict(torch.load(MODEL_SAVE_PATH))
-    test_loss = training.evaluate(model, test_iterator, criterion)
-    print(f'| Test Loss: {test_loss:.3f} | Test PPL: {math.exp(test_loss):7.3f} |')
-"""
+    #Test Loss after 30 epochs for powerful model: 1.5128

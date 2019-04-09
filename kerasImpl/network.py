@@ -1,7 +1,7 @@
 from kerasImpl import data
 
 from numpy import argmax
-
+from random import randint
 from pickle import load
 from numpy import array
 from keras.preprocessing.text import Tokenizer
@@ -19,7 +19,8 @@ from keras.layers import Dropout
 from keras.layers import Input
 from keras.callbacks import ModelCheckpoint
 from nltk.translate.bleu_score import corpus_bleu
-
+import numpy as np
+import random
 
 # define NMT model
 def define_model(src_vocab, tar_vocab, src_timesteps, tar_timesteps, n_units, latent_dim, dropout):
@@ -41,14 +42,13 @@ def define_model(src_vocab, tar_vocab, src_timesteps, tar_timesteps, n_units, la
     # model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
     # return model
 
-    # model = Sequential()
-    # model.add(Embedding(src_vocab, n_units, input_length=src_timesteps, mask_zero=True))
-    # model.add(LSTM(n_units))
-    # model.add(RepeatVector(tar_timesteps))
-    # model.add(LSTM(n_units, return_sequences=True))
-    # model.add(TimeDistributed(Dense(tar_vocab, activation='softmax')))
-
-    # return model
+    #model = Sequential()
+    #model.add(Embedding(src_vocab, n_units, input_length=src_timesteps, mask_zero=True))
+    #model.add(LSTM(n_units))
+    #model.add(RepeatVector(tar_timesteps))
+    #model.add(LSTM(n_units, return_sequences=True))
+    #model.add(TimeDistributed(Dense(tar_vocab, activation='softmax')))
+    #return model
 
     model = Sequential()
     model.add(Embedding(src_vocab, latent_dim, input_length=src_timesteps, mask_zero=True))
@@ -65,35 +65,49 @@ def define_model(src_vocab, tar_vocab, src_timesteps, tar_timesteps, n_units, la
 
 
 def define_model_powerful(src_vocab, tar_vocab, src_timesteps, tar_timesteps, n_units, latent_dim, dropout):
-    #TODO
-    n_input = src_timesteps
-    n_output = tar_timesteps
-    # define training encoder
-    encoder_inputs = Input(shape=(None, n_input))
-    x = Embedding(src_vocab, latent_dim)(encoder_inputs)
-    encoder_outputs, state_h, state_c = LSTM(n_units, return_state=True)(x)
-    #encoder_outputs, state_h, state_c = encoder(encoder_inputs)
+    #TODO rename layers and outputs to unique identifiers
+    #define the encoder
+    encoder_inputs = Input(shape=(src_timesteps,))#Input(shape=(None, src_vocab)) + in data.py add the functionality,
+    # to get the one-hot encoded version of trainX, if I don't want to use embedding
+
+    encoder_embedding = Embedding(src_vocab, latent_dim, input_length=src_timesteps, mask_zero=True)
+    encoder_embedding = encoder_embedding(encoder_inputs)
+
+    encoder_lstm1 = LSTM(n_units, return_state=True, return_sequences=True, dropout=dropout)
+    #encoder_outputs, state_h, state_c = encoder_lstm1(encoder_inputs)
+    lstm_output = encoder_lstm1(encoder_embedding) #encoder_inputs
+    encoder_lstm2 = LSTM(n_units, return_state=True, dropout=dropout)
+    encoder_outputs, state_h, state_c = encoder_lstm2(lstm_output)
+    encoder_dropout = Dropout(dropout)
+    encoder_outputs = encoder_dropout(encoder_outputs)
     encoder_states = [state_h, state_c]
-    # define training decoder
-    decoder_inputs = Input(shape=(None, n_output))
-    decoder_lstm = LSTM(n_units, return_sequences=True, return_state=True)
-    decoder_outputs, _, _ = decoder_lstm(decoder_inputs, initial_state=encoder_states)
-    decoder_dense = Dense(n_output, activation='softmax')
+
+    #define the decoder
+    decoder_inputs = Input(shape=(None, tar_vocab))
+    decoder_lstm1 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout)
+    lstm_output = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
+    decoder_lstm2 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout)
+    decoder_outputs, _, _ = decoder_lstm2(lstm_output)
+    decoder_dropout = Dropout(dropout)
+    decoder_outputs = decoder_dropout(decoder_outputs)
+    decoder_dense = Dense(tar_vocab, activation='softmax')
     decoder_outputs = decoder_dense(decoder_outputs)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+
     # define inference encoder
     encoder_model = Model(encoder_inputs, encoder_states)
+
     # define inference decoder
     decoder_state_input_h = Input(shape=(n_units,))
     decoder_state_input_c = Input(shape=(n_units,))
     decoder_states_inputs = [decoder_state_input_h, decoder_state_input_c]
-    decoder_outputs, state_h, state_c = decoder_lstm(decoder_inputs, initial_state=decoder_states_inputs)
+    temporary_output = decoder_lstm1(decoder_inputs, initial_state=decoder_states_inputs)
+    decoder_outputs, state_h, state_c = decoder_lstm2(temporary_output)
     decoder_states = [state_h, state_c]
     decoder_outputs = decoder_dense(decoder_outputs)
     decoder_model = Model([decoder_inputs] + decoder_states_inputs, [decoder_outputs] + decoder_states)
-    # return all models
-    return model, encoder_model, decoder_model
 
+    return model, encoder_model, decoder_model
 
 # generate target given source sequence
 def predict_sequence(model, tokenizer, source):
@@ -106,7 +120,6 @@ def predict_sequence(model, tokenizer, source):
             break
         target.append(word)
     return ' '.join(target)
-
 
 # evaluate the skill of the model
 def evaluate_model(model, tokenizer, sources, raw_dataset):
@@ -130,3 +143,31 @@ def evaluate_model(model, tokenizer, sources, raw_dataset):
 # make architecture same
 # failed add teacher enforcing
 #evaluate the same
+
+# generate a sequence of random integers
+def generate_sequence(length, n_unique):
+    return [randint(1, n_unique - 1) for _ in range(length)]
+
+# prepare data for the LSTM
+def get_dataset(n_in, n_out, cardinality, cardinality2, n_samples):
+    X1, X2, y = list(), list(), list()
+    for _ in range(n_samples):
+        # generate source sequence
+        source = generate_sequence(n_in, cardinality)
+        # define padded target sequence
+        target = generate_sequence(n_out, cardinality2)
+        target.reverse()
+        # create padded input target sequence
+        target_in = [0] + target[:-1]
+        # encode
+        src_encoded = to_categorical([source], num_classes=cardinality)
+        tar_encoded = to_categorical([target], num_classes=cardinality2)
+        tar2_encoded = to_categorical([target_in], num_classes=cardinality2)
+        # store
+        X1.append(src_encoded)
+        X2.append(tar2_encoded)
+        y.append(tar_encoded)
+    X1 = np.squeeze(array(X1), axis=1)
+    X2 = np.squeeze(array(X2), axis=1)
+    y = np.squeeze(array(y), axis=1)
+    return X1, X2, y

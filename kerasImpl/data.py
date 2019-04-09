@@ -147,18 +147,21 @@ def prepareData(dataset, train, test, val, allData):
     # prepare training data
     trainX = encode_sequences(ger_tokenizer, ger_length, train[:, 1])
     trainY = encode_sequences(eng_tokenizer, eng_length, train[:, 0])
-    trainY = encode_output(trainY, eng_vocab_size)
+    #trainX, _ = encode_output(trainX, ger_vocab_size)
+    trainY, trainY_shifted = encode_output(trainY, eng_vocab_size)
     # prepare testing data
     testX = encode_sequences(ger_tokenizer, ger_length, test[:, 1])
     testY = encode_sequences(eng_tokenizer, eng_length, test[:, 0])
-    testY = encode_output(testY, eng_vocab_size)
+    #testX, _ = encode_output(testX, ger_vocab_size)
+    testY, testY_shifted = encode_output(testY, eng_vocab_size)
     # prepare validation data
     valX = encode_sequences(ger_tokenizer, ger_length, val[:, 1])
     valY = encode_sequences(eng_tokenizer, eng_length, val[:, 0])
-    valY = encode_output(valY, eng_vocab_size)
+    #valX, _ = encode_output(valX, ger_vocab_size)
+    valY, valY_shifted = encode_output(valY, eng_vocab_size)
     vocab_size = [ger_vocab_size, eng_vocab_size]
     lang_length = [ger_length, eng_length]
-    all_data = [trainX, trainY, testX, testY, valX, valY]
+    all_data = [trainX, trainY, testX, testY, valX, valY, trainY_shifted, valY_shifted, testY_shifted]
     return vocab_size, lang_length, all_data, eng_tokenizer
 
 
@@ -242,12 +245,19 @@ def encode_sequences(tokenizer, length, lines):
 # one hot encode target sequence
 def encode_output(sequences, vocab_size):
     ylist = list()
+    ylist_shifted = list()
     for sequence in sequences:
+        sequence_shifted = sequence[:-1].copy()
+        sequence_shifted = np.insert(sequence_shifted, 0, 0, axis=0)
         encoded = to_categorical(sequence, num_classes=vocab_size)
+        encoded_shifted = to_categorical(sequence_shifted, num_classes=vocab_size)
         ylist.append(encoded)
+        ylist_shifted.append(encoded_shifted)
     y = array(ylist)
+    y_shifted = array(ylist_shifted)
     y = y.reshape(sequences.shape[0], sequences.shape[1], vocab_size)
-    return y
+    y_shifted = y_shifted.reshape(sequences.shape[0], sequences.shape[1], vocab_size)
+    return y, y_shifted
 
 
 # map an integer to a word

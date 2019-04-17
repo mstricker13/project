@@ -18,6 +18,7 @@ kerasImplTimeSerias: Adapted the Keras implementation for time series
 * Write result in txt file
 * Clean Up code and remove unnecessary stuff
 * Make theta inclusion nicer
+* Maybe add support for array of window sizes
 
 ## Question
 

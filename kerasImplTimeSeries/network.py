@@ -24,7 +24,7 @@ import numpy as np
 import random
 
 #the first network
-def define_model_1(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_1(features_per_timestep, input_length, output_length):
     name = 'LSTM_2u512D5_2u512D5_D5'
     n_units = 512
     dropout = 0.5
@@ -58,7 +58,7 @@ def define_model_1(features_per_timestep, input_length, output_length, n_units, 
     return model, name
 
 #remove dropout in recurrent layers because some people in the internet say it doesn't make sense
-def define_model_2(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_2(features_per_timestep, input_length, output_length):
     name = 'LSTM_2u512_2u512_D5'
     n_units = 512
     dropout = 0.5
@@ -90,7 +90,7 @@ def define_model_2(features_per_timestep, input_length, output_length, n_units, 
     return model, name
 
 #the first network, but removed dropout completely
-def define_model_3(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_3(features_per_timestep, input_length, output_length):
     name = 'LSTM_2u512_2u512'
     n_units = 512
     dropout = 0.5
@@ -122,7 +122,7 @@ def define_model_3(features_per_timestep, input_length, output_length, n_units, 
     return model, name
 
 #try out a deep and thin architecture
-def define_model_4(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_4(features_per_timestep, input_length, output_length):
     name = 'LSTM_6u32D5_6u32D5_D5'
     n_units = 32
     dropout = 0.5
@@ -170,7 +170,7 @@ def define_model_4(features_per_timestep, input_length, output_length, n_units, 
     return model, name
 
 #try out a deep and thin architecture, no dropout inside layers
-def define_model_5(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_5(features_per_timestep, input_length, output_length):
     name = 'LSTM_6u32_6u32_D5'
     n_units = 32
     dropout = 0.5
@@ -219,7 +219,7 @@ def define_model_5(features_per_timestep, input_length, output_length, n_units, 
 
 #the next models are going less deep but more wide. They try out a version with dropout inside the layers and one without
 
-def define_model_6(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_6(features_per_timestep, input_length, output_length):
     name = 'LSTM_5u64D5_5u64D5_D5'
     n_units = 64
     dropout = 0.5
@@ -262,7 +262,7 @@ def define_model_6(features_per_timestep, input_length, output_length, n_units, 
 
     return model, name
 
-def define_model_7(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_7(features_per_timestep, input_length, output_length):
     name = 'LSTM_5u64_5u64_D5'
     n_units = 64
     dropout = 0.5
@@ -305,7 +305,7 @@ def define_model_7(features_per_timestep, input_length, output_length, n_units, 
 
     return model, name
 
-def define_model_8(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_8(features_per_timestep, input_length, output_length):
     name = 'LSTM_4u128D5_4u128D5_D5'
     n_units = 128
     dropout = 0.5
@@ -344,7 +344,7 @@ def define_model_8(features_per_timestep, input_length, output_length, n_units, 
 
     return model, name
 
-def define_model_9(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_9(features_per_timestep, input_length, output_length):
     name = 'LSTM_4u128_4u128_D5'
     n_units = 128
     dropout = 0.5
@@ -383,7 +383,7 @@ def define_model_9(features_per_timestep, input_length, output_length, n_units, 
 
     return model, name
 
-def define_model_10(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_10(features_per_timestep, input_length, output_length):
     name = 'LSTM_3u256D5_4u256D5_D5'
     n_units = 256
     dropout = 0.5
@@ -418,7 +418,7 @@ def define_model_10(features_per_timestep, input_length, output_length, n_units,
 
     return model, name
 
-def define_model_11(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_11(features_per_timestep, input_length, output_length):
     name = 'LSTM_3u256_4u256_D5'
     n_units = 256
     dropout = 0.5
@@ -455,7 +455,7 @@ def define_model_11(features_per_timestep, input_length, output_length, n_units,
 
 #2 layers with 512 units are actually network 1 and 2
 
-def define_model_12(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_12(features_per_timestep, input_length, output_length):
     name = 'LSTM_1u1024D5_1u1024D5_D5'
     n_units = 1024
     dropout = 0.5
@@ -482,7 +482,7 @@ def define_model_12(features_per_timestep, input_length, output_length, n_units,
 
     return model, name
 
-def define_model_13(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_13(features_per_timestep, input_length, output_length):
     name = 'LSTM_1u1024_1u1024_D5'
     n_units = 1024
     dropout = 0.5
@@ -511,7 +511,7 @@ def define_model_13(features_per_timestep, input_length, output_length, n_units,
 
 #Rise up! Fall Down
 #TODO fix bug in model14
-def define_model_14(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_14(features_per_timestep, input_length, output_length):
     name = 'LSTM_4u32to256_4u256to32_D5'
     dropout = 0.5
 
@@ -558,7 +558,7 @@ def define_model_14(features_per_timestep, input_length, output_length, n_units,
     return model, name
 
 #very small model
-def define_model_15(features_per_timestep, input_length, output_length, n_units, dropout):
+def define_model_15(features_per_timestep, input_length, output_length):
     name = 'LSTM_1u128_1u128_D5'
     n_units = 128
     dropout = 0.5

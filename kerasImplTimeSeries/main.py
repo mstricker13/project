@@ -5,6 +5,7 @@ from kerasImplTimeSeries import data, network, create_models, utils, result_comp
 from keras.utils.vis_utils import plot_model
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
+from keras import backend as K
 
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
@@ -16,14 +17,13 @@ import sys
 
 if __name__ == '__main__':
 
-    #some configurations to fix an allocation error with cublas --> sometimes the error comes sometimes it doesn't...
+    # some configurations to fix an allocation error with cublas --> sometimes the error comes sometimes it doesn't...
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU
     config.log_device_placement = True  # to log device placement (on which device the operation ran)
     # (nothing gets printed in Jupyter, only if you run it standalone)
     sess = tf.Session(config=config)
     set_session(sess)  # set this TensorFlow session as the default session for Keras
-
 
     #definition of Hyperparameters
 
@@ -40,13 +40,13 @@ if __name__ == '__main__':
     split_ratio = [0.7, 0.1, 0.2] #TODO why a split ratio for test if that are just our 6/12 values defined in the line
     #TODO therefore exclude these horizons and use them as seperate test?
     #the last x values which are to be used for forecasting values
-    window_size = 3 #TODO change to good value, for debugging purposes is short now
+    window_size = 5 #TODO change to good value, for debugging purposes is short now
     #number of steps to move the window #TODO what step size?
     step_size = 1
     #horizon number of values to be predicted in addition to the horizon defined by the
-    horizon = [1, 3] #1,3
+    horizon = [6] #1,3
     #for model
-    n_epochs = 3
+    n_epochs = 5000
     batch_size = 128
 
     # format Theta file
@@ -95,29 +95,34 @@ if __name__ == '__main__':
     input_length = window_size
     new_horizons = [len(predicts) for predicts in trainY[0][0]]
     output_length = new_horizons
-    models = create_models.create(feature_size, input_length, output_length)
-    for modelInfo in models:
-        model = modelInfo[0]
-        current_horizon = modelInfo[2]
-        theta = '' #TODO check if theta data is used if yes = '_T'
-        name = modelInfo[1] + theta + '_' + str(current_horizon) + '_' + str(window_size) + '_' + str(step_size)
-        #summarize defined model
-        print(model.summary())
-        folderpath = os.path.join('output', name)
-        try:
-           #Create target Directory
-           os.mkdir(folderpath)
-           print("Directory ", folderpath, " Created ")
-        except FileExistsError:
-           print("Directory ", folderpath, " already exists")
-        fileprefix = os.path.join(folderpath, name)
-        plot_model(model, to_file=fileprefix + '.png', show_shapes=True)
+    for horizon in output_length:
+
         #iterate through each sequence and train model on it
         i = 1
         mapes = []
-        #for trainXS, trainYS, trainY_shiftedS, testXS, testYS, testY_shiftedS, valXS, valYS, valY_shiftedS in zip(trainX, trainY, trainY_shifted_theta, testX, testY, testY_shifted_theta, valX, valY, valY_shifted_theta):
-        for trainXS, trainYS, trainY_shiftedS, testXS, testYS, testY_shiftedS, valXS, valYS, valY_shiftedS in zip(trainX, trainY, trainY_shifted, testX, testY, testY_shifted, valX, valY, valY_shifted):
-            # TODO reshape input arrays somewhere here
+        for trainXS, trainYS, trainY_shiftedS, testXS, testYS, testY_shiftedS, valXS, valYS, valY_shiftedS in zip(trainX, trainY, trainY_shifted_theta, testX, testY, testY_shifted_theta, valX, valY, valY_shifted_theta):
+
+            model, name = network.define_model_1(feature_size, input_length, horizon)
+            model.compile(optimizer='adam', loss='mean_squared_error')
+
+            # compile model for each single sequence
+            # model = modelInfo[0]
+            # model.compile(optimizer='adam', loss='mean_squared_error')
+            # summarize defined model
+            print(model.summary())
+            current_horizon = horizon
+            theta = ''  # TODO check if theta data is used if yes = '_T'
+            name = name + theta + '_' + str(current_horizon) + '_' + str(window_size) + '_' + str(step_size)
+            folderpath = os.path.join('output', name)
+            try:
+                # Create target Directory
+                os.mkdir(folderpath)
+                print("Directory ", folderpath, " Created ")
+            except FileExistsError:
+                print("Directory ", folderpath, " already exists")
+            fileprefix = os.path.join(folderpath, name)
+            plot_model(model, to_file=fileprefix + '.png', show_shapes=True)
+
             #get the predictions from targets matching with the current horizon
             trainYS = utils.get_matching_predictions(trainYS, current_horizon)
             trainY_shiftedS = utils.get_matching_predictions(trainY_shiftedS, current_horizon)
@@ -157,6 +162,9 @@ if __name__ == '__main__':
             filename = fileprefix + '_' + str(i) + '.h5'
             checkpoint = ModelCheckpoint(filename, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
             print('Train')
+            #print(trainXS)
+            #print(trainY_shiftedS)
+            #sys.exit()
             history = model.fit([trainXS, trainY_shiftedS], trainYS, epochs=n_epochs, batch_size=batch_size, validation_data=([valXS, valY_shiftedS], valYS), callbacks=[checkpoint], verbose=2)
             plt.plot(history.history['loss'])
             plt.plot(history.history['val_loss'])
@@ -165,15 +173,27 @@ if __name__ == '__main__':
             plt.xlabel('epoch')
             plt.legend(['train', 'val'], loc='upper left')
             plt.savefig(fileprefix + '_' + str(i) + '_fig')
+            plt.close()
 
             #evaluate model
             #model = load_model(fileprefix + '.h5')
             print('Test')
             #scores = model.evaluate([testXS, testY_shiftedS], testYS)
-            #result = model.predict([testX, testY_shifted], batch_size=batch_size, verbose=0)
-            #smape = result_compiler.sMAPE(result[len(testX)-current_horizon], testY[len(testX)-current_horizon], current_horizon)
-            #mapes += [smape]
+            result = model.predict([testXS, testY_shiftedS], batch_size=batch_size, verbose=0)
+            #print(testYS)
+            #print(result)
+            #print('----------')
+            #TODO since the challenge was to predict the last horizon many values, why use test set and not only last sample? For now mean taken as result
+            smape = result_compiler.sMAPE(result, testYS, current_horizon)
+            #smape = result_compiler.sMAPE(result[len(testX)-current_horizon], testYS[len(testX)-current_horizon], current_horizon)
+            mapes += [smape]
             #print(scores)
             #print(result)
             i += 1
-        #print(np.mean(mapes))
+            tf.reset_default_graph()
+            K.clear_session()
+        #print('???????')
+        #print(mapes)
+        smape_file = open(fileprefix + 'mean_sMape.txt', 'w')
+        smape_file.write(str(np.mean(mapes)))
+        smape_file.close()

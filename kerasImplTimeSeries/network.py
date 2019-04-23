@@ -23,6 +23,26 @@ from nltk.translate.bleu_score import corpus_bleu
 import numpy as np
 import random
 
+def define_model_Test(features_per_timestep, input_length, output_length):
+    name = 'Test'
+    n_units = 512
+    dropout = 0.5
+    input = Input(shape=(input_length, features_per_timestep))
+
+    lstm_layer = LSTM(n_units, return_sequences=True, return_state=True)
+    out, h, c = lstm_layer(input)
+
+    s = [h, c]
+    k = Input(shape=(output_length, features_per_timestep))
+
+    lstm_layer2 = LSTM(n_units, return_sequences=True)
+    out2 = lstm_layer2(k, initial_state=s)
+    dense = TimeDistributed(Dense(features_per_timestep))
+    denseout= dense(out2)
+    model = Model([input, k], denseout)
+    return model, name
+
+
 #the first network
 def define_model_1(features_per_timestep, input_length, output_length):
     name = 'LSTM_2u512D5_2u512D5_D5'
@@ -51,7 +71,7 @@ def define_model_1(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm2, _, _ = decoder_lstm2(decoder_outputs_lstm1)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm2)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -83,7 +103,7 @@ def define_model_2(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm2, _, _ = decoder_lstm2(decoder_outputs_lstm1)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm2)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -115,7 +135,7 @@ def define_model_3(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm1 = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
     decoder_lstm2 = LSTM(n_units, return_sequences=True, return_state=True)
     decoder_outputs_lstm2, _, _ = decoder_lstm2(decoder_outputs_lstm1)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_lstm2)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -163,7 +183,7 @@ def define_model_4(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm6, _, _ = decoder_lstm6(decoder_outputs_lstm5)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm6)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -211,7 +231,7 @@ def define_model_5(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm6, _, _ = decoder_lstm6(decoder_outputs_lstm5)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm6)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -256,7 +276,7 @@ def define_model_6(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm5, _, _ = decoder_lstm5(decoder_outputs_lstm4)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm5)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -299,7 +319,7 @@ def define_model_7(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm5, _, _ = decoder_lstm5(decoder_outputs_lstm4)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm5)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -338,7 +358,7 @@ def define_model_8(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm4, _, _ = decoder_lstm4(decoder_outputs_lstm3)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm4)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -377,7 +397,7 @@ def define_model_9(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm4, _, _ = decoder_lstm4(decoder_outputs_lstm3)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm4)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -412,7 +432,7 @@ def define_model_10(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm3, _, _ = decoder_lstm3(decoder_outputs_lstm2)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm3)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -447,7 +467,7 @@ def define_model_11(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm3, _, _ = decoder_lstm3(decoder_outputs_lstm2)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm3)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -476,7 +496,7 @@ def define_model_12(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm1, _, _ = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm1)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -503,7 +523,7 @@ def define_model_13(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm1, _, _ = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm1)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -551,7 +571,7 @@ def define_model_14(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm4, _, _ = decoder_lstm4(decoder_outputs_lstm3)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm4)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
@@ -579,7 +599,7 @@ def define_model_15(features_per_timestep, input_length, output_length):
     decoder_outputs_lstm1, _, _ = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm1)
-    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
     decoder_outputs = decoder_dense(decoder_outputs_dropout)
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 

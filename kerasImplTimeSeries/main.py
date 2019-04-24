@@ -1,7 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 
-from kerasImplTimeSeries import data, network, create_models, utils, result_compiler
+from kerasImplTimeSeries import data, network, create_models, utils, result_compiler, preprocessor
 from keras.utils.vis_utils import plot_model
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
@@ -12,6 +12,7 @@ from keras.backend.tensorflow_backend import set_session
 
 from numpy import array
 import numpy as np
+import math
 
 import sys
 
@@ -31,23 +32,22 @@ if __name__ == '__main__':
     location = 'data'
     # location of the CIF folder, containing the CIF csv file
     location_CIF = os.path.join(location, 'CIF', 'cif_dataset_complete.csv')
-    location_Theta = os.path.join(location, 'Theta-Predictions', 'theta_25_h1.csv')
-    location_Theta2 = os.path.join(location, 'Theta-Predictions', 'theta_25_h1_CIF.csv')
+    location_Theta = os.path.join(location, 'Theta-Predictions', 'theta_25_h3.csv')
+    location_Theta2 = os.path.join(location, 'Theta-Predictions', 'theta_25_h3_CIF.csv')
     saving_location = os.path.join(location, 'processed')
     #percentage of rows that were used to train Theta and need to be skipped for usage in our networks
     percentage = 0.25
     #defines the ratio of train, validation and test set the whole dataset is split into
-    split_ratio = [0.7, 0.1, 0.2] #TODO why a split ratio for test if that are just our 6/12 values defined in the line
-    #TODO therefore exclude these horizons and use them as seperate test?
+    split_ratio = [0.8, 0.2]
     #the last x values which are to be used for forecasting values
-    window_size = 5 #TODO change to good value, for debugging purposes is short now
-    #number of steps to move the window #TODO what step size?
+    window_size = 7
+    #number of steps to move the window
     step_size = 1
     #horizon number of values to be predicted in addition to the horizon defined by the
-    horizon = [6] #1,3
+    horizon = [3] #1,3 #TODO taking only last sample makes support for multiple horizon testing weird, therefore only one for now
     #for model
-    n_epochs = 5000
-    batch_size = 128
+    n_epochs = 200
+    batch_size = 8
 
     # format Theta file
     utils.convert_Theta_to_CIF_format(location_Theta)
@@ -100,9 +100,10 @@ if __name__ == '__main__':
         #iterate through each sequence and train model on it
         i = 1
         mapes = []
-        for trainXS, trainYS, trainY_shiftedS, testXS, testYS, testY_shiftedS, valXS, valYS, valY_shiftedS in zip(trainX, trainY, trainY_shifted_theta, testX, testY, testY_shifted_theta, valX, valY, valY_shifted_theta):
+        #XXX_shiftedS is the expert data, #TODO rename
+        for trainXS, trainYS, trainY_shiftedS, testXS, testYS, testY_shiftedS, valXS, valYS, valY_shiftedS in zip(trainX, trainY, trainY_theta, testX, testY, testY_theta, valX, valY, valY_theta):
 
-            model, name = network.define_model_1(feature_size, input_length, horizon)
+            model, name = network.define_model_1_changed(feature_size, input_length, horizon)
             model.compile(optimizer='adam', loss='mean_squared_error')
 
             # compile model for each single sequence
@@ -139,32 +140,46 @@ if __name__ == '__main__':
             testXS = testXS[:example_number_test]
             valXS = valXS[:example_number_val]
 
-            if current_horizon == 12:
-                if i == 49:
-                    print(trainXS, trainYS, trainY_shiftedS)
-                    print(testXS, testYS, testY_shiftedS)
-                    print(valXS, valYS, valY_shiftedS)
-                    print(example_number_val, example_number_test, example_number_train)
-                    print(len(trainXS), len(testYS), len(valYS))
+            # transformer using the standardization method on training set
+            transformer = preprocessor.standardization([j for i in trainXS for j in i])
+            # getting transformer from theta training data
+            transformer_expert = preprocessor.standardization([j for i in trainY_shiftedS for j in i])
 
-            #reshape list to match network input
-            trainXS = array(trainXS).reshape(example_number_train, window_size, 1)
-            trainYS = array(trainYS).reshape(example_number_train, current_horizon, 1)
-            trainY_shiftedS = array(trainY_shiftedS).reshape(example_number_train, current_horizon, 1)
-            testXS = array(testXS).reshape(example_number_test, window_size, 1)
+            #trainXS = [transformer.transform((array(utils.to_log(trainXS_sample)).reshape(len(trainXS_sample), 1))) for trainXS_sample in trainXS]
+            #TODO if no log remove here and in standardize method and in sMape
+            trainYS = [transformer.transform((array(utils.to_log(trainYS_sample)).reshape(len(trainYS_sample), 1))) for trainYS_sample in trainYS]
+            trainXS = [transformer.transform((array(utils.to_log(trainXS_sample)).reshape(len(trainXS_sample), 1))) for trainXS_sample in trainXS]
+            valXS = [transformer.transform((array(utils.to_log(valXS_sample)).reshape(len(valXS_sample), 1))) for valXS_sample in valXS]
+            valYS = [transformer_expert.transform((array(utils.to_log(valYS_sample)).reshape(len(valYS_sample), 1))) for valYS_sample in valYS]
+            testXS = [transformer.transform((array(utils.to_log(testXS_sample)).reshape(len(testXS_sample), 1))) for testXS_sample in testXS]
+
+            trainY_shiftedS = [transformer.transform((array(utils.to_log(trainY_shiftedS_sample)).reshape(len(trainY_shiftedS_sample), 1))) for trainY_shiftedS_sample in trainY_shiftedS]
+            valY_shiftedS = [transformer.transform((array(utils.to_log(valY_shiftedS_sample)).reshape(len(valY_shiftedS_sample), 1))) for valY_shiftedS_sample in valY_shiftedS]
+            testY_shiftedS = [transformer.transform((array(utils.to_log(testY_shiftedS_sample)).reshape(len(testY_shiftedS_sample), 1))) for testY_shiftedS_sample in testY_shiftedS]
+
+            trainYS = utils.shape_transformed_toinput(trainYS, example_number_train, current_horizon)
+            trainXS = utils.shape_transformed_toinput(trainXS, example_number_train, window_size)
+            testXS = utils.shape_transformed_toinput(testXS, example_number_test, window_size)
+            valXS = utils.shape_transformed_toinput(valXS, example_number_val, window_size)
+            valYS = utils.shape_transformed_toinput(valYS, example_number_val, current_horizon)
+            trainY_shiftedS = utils.shape_transformed_toinput(trainY_shiftedS, example_number_train, current_horizon)
+            valY_shiftedS = utils.shape_transformed_toinput(valY_shiftedS, example_number_val, current_horizon)
+            testY_shiftedS = utils.shape_transformed_toinput(testY_shiftedS, example_number_test, current_horizon)
+            #reshape list to match network input #TODO skipped because reshaping is done by transformer now
+            #trainXS = array(trainXS).reshape(example_number_train, window_size, 1)
+            #trainYS = array(trainYS).reshape(example_number_train, current_horizon, 1)
+            #trainY_shiftedS = array(trainY_shiftedS).reshape(example_number_train, current_horizon, 1)
+            #testXS = array(testXS).reshape(example_number_test, window_size, 1)
             testYS = array(testYS).reshape(example_number_test, current_horizon, 1)
-            testY_shiftedS = array(testY_shiftedS).reshape(example_number_test, current_horizon, 1)
-            valXS = array(valXS).reshape(example_number_val, window_size, 1)
-            valYS = array(valYS).reshape(example_number_val, current_horizon, 1)
-            valY_shiftedS = array(valY_shiftedS).reshape(example_number_val, current_horizon, 1)
+            #testY_shiftedS = array(testY_shiftedS).reshape(example_number_test, current_horizon, 1)
+            #valXS = array(valXS).reshape(example_number_val, window_size, 1)
+            #valYS = array(valYS).reshape(example_number_val, current_horizon, 1)
+            #valY_shiftedS = array(valY_shiftedS).reshape(example_number_val, current_horizon, 1)
 
             #fit model
             filename = fileprefix + '_' + str(i) + '.h5'
             checkpoint = ModelCheckpoint(filename, monitor='val_loss', verbose=1, save_best_only=True, mode='min')
             print('Train')
-            #print(trainXS)
-            #print(trainY_shiftedS)
-            #sys.exit()
             history = model.fit([trainXS, trainY_shiftedS], trainYS, epochs=n_epochs, batch_size=batch_size, validation_data=([valXS, valY_shiftedS], valYS), callbacks=[checkpoint], verbose=2)
             plt.plot(history.history['loss'])
             plt.plot(history.history['val_loss'])
@@ -180,20 +195,16 @@ if __name__ == '__main__':
             print('Test')
             #scores = model.evaluate([testXS, testY_shiftedS], testYS)
             result = model.predict([testXS, testY_shiftedS], batch_size=batch_size, verbose=0)
-            #print(testYS)
-            #print(result)
-            #print('----------')
-            #TODO since the challenge was to predict the last horizon many values, why use test set and not only last sample? For now mean taken as result
-            smape = result_compiler.sMAPE(result, testYS, current_horizon)
-            #smape = result_compiler.sMAPE(result[len(testX)-current_horizon], testYS[len(testX)-current_horizon], current_horizon)
+            print(result)
+            smape = result_compiler.sMAPE(result, testYS, current_horizon, transformer, fileprefix, i)
             mapes += [smape]
-            #print(scores)
-            #print(result)
             i += 1
             tf.reset_default_graph()
             K.clear_session()
-        #print('???????')
-        #print(mapes)
         smape_file = open(fileprefix + 'mean_sMape.txt', 'w')
-        smape_file.write(str(np.mean(mapes)))
+        smape_file.write('Mean over all sMapes = ' + str(np.mean(mapes)) + '\n')
+        i = 1
+        for value in mapes:
+            smape_file.write('sMape_' + str(i) + ' = ' + str(value) + '\n')
+            i += 1
         smape_file.close()

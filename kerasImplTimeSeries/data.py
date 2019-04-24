@@ -172,13 +172,13 @@ def create_n_tuples(sequences, window_size, stepsize, horizon):
 
 def divide_data(data, split_ratio):
     """
-    divides data in train, validation and test set
+    divides data in train, validation and test set, where test set will be the last sample of window size and horizon
     :param data: array of dataset to be split
     :param split_ratio: array containing the ratio for train, validation and test
     :return: train, validation and test set
     """
     #define the number of rows per set
-    train_split, val_split, test_split = split_ratio[0], split_ratio[1], split_ratio[2]
+    train_split, val_split = split_ratio[0], split_ratio[1]
     train, val, test, = list(), list(), list()
 
     #create a train/val/test sequence for each sequence
@@ -186,8 +186,8 @@ def divide_data(data, split_ratio):
         tmp_train, tmp_val, tmp_test, = list(), list(), list()
         tuple_count = len(sequence)
         train_split_abs = int(tuple_count * train_split)
-        val_split_abs = int(tuple_count * val_split)
-        test_split_abs = tuple_count - train_split_abs - val_split_abs
+        val_split_abs = tuple_count - (train_split_abs + 1)
+        test_split_abs = 1
         i = 0
         while i < train_split_abs:
             tmp_train.append(sequence[i])
@@ -200,10 +200,9 @@ def divide_data(data, split_ratio):
             i += 1
         train.append(tmp_train)
         val.append(tmp_val)
-        test.append(tmp_test)
+        test.append(tmp_test) #TODO since it looks different make sure that it still works, just don't cast it to array...
 
-    #np.random.shuffle(data) #TODO shuffling not done, because match to Theta predictions necessary
-    return array(train), array(val), array(test)
+    return array(train), array(val), test
 
 def save_data(pairs, filename):
     """

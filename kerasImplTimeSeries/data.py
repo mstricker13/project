@@ -5,7 +5,6 @@ from pickle import dump, load
 from unicodedata import normalize
 from numpy import array, append
 from keras.preprocessing.text import Tokenizer
-from keras.preprocessing.sequence import pad_sequences
 from keras.utils import to_categorical
 import numpy as np
 import sys
@@ -13,7 +12,7 @@ import sys
 #each line in csv starts with generell information, like horizon etc. This number denotes how many of those etc. infos there are
 cif_offset = 3
 
-def create_Pkl_CIF_File(location, saving_location, percentage, split_ratio, window_size, stepsize, horizon):
+def create_Pkl_CIF_File(location, saving_location, percentage, split_ratio, window_size, stepsize, horizon, use_csv_horizon, step_size):
     """
     creates pkl files for training , test and validation based on the file defined by the location parameter. It will
     also clean the text.
@@ -29,14 +28,24 @@ def create_Pkl_CIF_File(location, saving_location, percentage, split_ratio, wind
     #load the document
     sequences = load_doc(location)
 
+    #print(len(sequences.split('\n')[0].split(',')))
+    #print(sequences.split('\n')[0].split(','))
+    #print(len(sequences.split('\n')[1].split(',')))
+    #print(sequences.split('\n')[1].split(','))
+
     #ignore the first $percentage% of rows
     sequences = ignore_first_percentage(sequences, percentage)
 
+    #print(len(sequences.split('\n')[0].split(',')))
+    #print(sequences.split('\n')[0].split(','))
+    #print(len(sequences.split('\n')[1].split(',')))
+    #print(sequences.split('\n')[1].split(','))
+
     #create pairs of values known to network and and the according values which need to be predicted
-    sequences = create_n_tuples(sequences, window_size, stepsize, horizon)
+    sequences = create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon)
 
     #divide data in train, validation and testset
-    train_pair, val_pair, test_pair = divide_data(sequences, split_ratio)
+    train_pair, val_pair, test_pair = divide_data(sequences, split_ratio, step_size)
 
     #saves data as pkl files on system
     save_data(test_pair, os.path.join(saving_location, 'test.pkl'))
@@ -46,7 +55,7 @@ def create_Pkl_CIF_File(location, saving_location, percentage, split_ratio, wind
 
     print('Pkl files created')
 
-def create_Pkl_Theta_File(location, saving_location, percentage, split_ratio, window_size, stepsize, horizon):
+def create_Pkl_Theta_File(location, saving_location, percentage, split_ratio, window_size, stepsize, horizon, use_csv_horizon, step_size):
     """
     creates pkl files for training , test and validation based on the file defined by the location parameter. It will
     also clean the text.
@@ -65,11 +74,17 @@ def create_Pkl_Theta_File(location, saving_location, percentage, split_ratio, wi
     #ignore the first $percentage% of rows
     #sequences = ignore_first_percentage(sequences, percentage)
 
+    #print(len(sequences.split('\n')[0].split(',')))
+    #print(sequences.split('\n')[0].split(','))
+    #print(len(sequences.split('\n')[1].split(',')))
+    #print(sequences.split('\n')[1].split(','))
+    #sys.exit()
+
     #create pairs of values known to network and and the according values which need to be predicted
-    sequences = create_n_tuples(sequences, window_size, stepsize, horizon)
+    sequences = create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon)
 
     #divide data in train, validation and testset
-    train_pair, val_pair, test_pair = divide_data(sequences, split_ratio)
+    train_pair, val_pair, test_pair = divide_data(sequences, split_ratio, step_size)
 
     #saves data as pkl files on system
     save_data(test_pair, os.path.join(saving_location, 'testTheta.pkl'))
@@ -112,7 +127,7 @@ def ignore_first_percentage(sequences, percentage):
     # -2 because there are 2 empty lines in the end
     return reduced_lines[:-2]
 
-def create_n_tuples(sequences, window_size, stepsize, horizon):
+def create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon):
     """
     for each sequence create a list of n-tuples. Each n-tuple consists of n lists. (Note that the term tuple was just used to differentiate, the datastructure of the tuple will be a list
     The lists inside the n-tuple represent:
@@ -132,6 +147,7 @@ def create_n_tuples(sequences, window_size, stepsize, horizon):
     lines = sequences.split('\n')
 
     result_sequences = list()
+    horizon_list = list()
     horizon_in = horizon
     for line in lines:
         horizon = horizon_in
@@ -141,6 +157,8 @@ def create_n_tuples(sequences, window_size, stepsize, horizon):
         #TODO figure out the bug, for adding horizons the first row where it changes kills it why?
         #if horizon_csv not in horizon:
         #    horizon += [horizon_csv]
+        defined_horizon = int(values[1])
+        horizon_list.append(defined_horizon)
         #remove the metadata from the list
         values = values[3:]
         #convert values from string to float
@@ -149,6 +167,8 @@ def create_n_tuples(sequences, window_size, stepsize, horizon):
         #create list of tuples with [[Learning, PredH1, PredH2,...], [Learning+step, PredH1+step, PredH2+step,...], ...]
         tuple_list = list()
         first_horizon = True
+        if use_csv_horizon:
+            horizon = [defined_horizon]
         for prediction_size in horizon:
             #start tuple creation from sequence at start value
             start_value = 0
@@ -168,9 +188,9 @@ def create_n_tuples(sequences, window_size, stepsize, horizon):
                 i += 1
             first_horizon = False
         result_sequences.append(tuple_list)
-    return result_sequences
+    return (result_sequences, horizon_list)
 
-def divide_data(data, split_ratio):
+def divide_data(data_tuple, split_ratio, step_size):
     """
     divides data in train, validation and test set, where test set will be the last sample of window size and horizon
     :param data: array of dataset to be split
@@ -180,9 +200,11 @@ def divide_data(data, split_ratio):
     #define the number of rows per set
     train_split, val_split = split_ratio[0], split_ratio[1]
     train, val, test, = list(), list(), list()
+    data = data_tuple[0]
+    horizons = data_tuple[1]
 
     #create a train/val/test sequence for each sequence
-    for sequence in data:
+    for sequence, horizon in zip(data, horizons):
         tmp_train, tmp_val, tmp_test, = list(), list(), list()
         tuple_count = len(sequence)
         train_split_abs = int(tuple_count * train_split)
@@ -198,11 +220,68 @@ def divide_data(data, split_ratio):
         while i < (test_split_abs + val_split_abs + train_split_abs):
             tmp_test.append(sequence[i])
             i += 1
+        tmp_val, tmp_test = change_test_to_true_horizon(tmp_val, tmp_test, horizon, step_size)
         train.append(tmp_train)
         val.append(tmp_val)
         test.append(tmp_test) #TODO since it looks different make sure that it still works, just don't cast it to array...
-
     return array(train), array(val), test
+
+def change_test_to_true_horizon(val, test, horizon, stepsize):
+    """
+    checks if the horizon of the test set matches with the wanted one defined by horizon. If not modifies val and test,
+    so that it matches
+    :param val:
+    :param test:
+    :param horizon:
+    :return:
+    """
+    used_horizon = len(test[0][1])
+    used_window_size = len(test[0][0])
+    #list of all values, since in the tuples values will appear multiple size depending on step size, iterate smartly
+    value_list = list()
+    #also makes sure that all test values are NOT in validation set
+    tmp = val + test
+    #have to add all the values from from the first tuple in tmp to the value_list
+    value_list = [val for val in tmp[0][0]]
+    value_list += [val for val in tmp[0][1]]
+    for tuple in tmp[1:]:
+        tuple_values = [val for val in tuple[0]]
+        tuple_values += [val for val in tuple[1]]
+        tmp_adder = tuple_values[len(tuple_values)-stepsize:]
+        value_list += tmp_adder
+
+    #create test set by just using the last elements, and remove them from the list from which validation should be created
+    test_label = value_list[-horizon:]
+    test_knowledge = value_list[len(value_list)-horizon-used_window_size:-horizon]
+    make_to_val = value_list[:len(value_list)-horizon]
+    #TODO ASK HOW TO SOLVE
+    if len(make_to_val) < (used_window_size + used_horizon):
+        diff = len(make_to_val) - (used_window_size + used_horizon)
+        pad = make_to_val[-1]
+        make_to_val += [pad] * abs(diff)
+    assert len(make_to_val) >= (used_window_size + used_horizon), 'Validation list to small to recreate it after creating' \
+                                                                 ' a non overlapping test set with the horizon defined ' \
+                                                                 'by its csv. Change split ratio to have a bigger validation set.' \
+                                                                  ' It\'s also possible that the list is too small for this configuration of horizon, window size in general'
+
+    #recreate the validation samples
+    new_val = list()
+
+    #start tuple creation from sequence at start value
+    start_value = 0
+    #end tuple creation from sequence at end value, needs to stop earlier, than the end of the list, so that the last values of prediction are not empty
+    end_value = len(make_to_val) - (used_window_size + used_horizon)
+    i = 0
+    #TODO not matching stepsize might remove some of the last elements, check it and print warning?
+    while start_value <= end_value:
+        learning_values = make_to_val[start_value:(used_window_size+start_value)]
+        prediction_values = make_to_val[(used_window_size+start_value):(used_window_size+used_horizon+start_value)]
+        new_val_tuple = [learning_values, prediction_values]
+        new_val.append(new_val_tuple)
+        start_value += stepsize
+        i += 1
+
+    return new_val, [[test_knowledge, test_label]]
 
 def save_data(pairs, filename):
     """
@@ -246,24 +325,6 @@ def prepare_Data(train, test, val):
     # prepare validation data
     valX, valY = splitter(val)
     valY_shifted = shifter(valY)
-
-    #trainX = pad_sequences(input_length, train[:, 0])
-    #trainY = pad_sequences(output_length, train[:, 1])
-    #trainY_shifted = shift(trainY, output_length)
-    #for now no one-hot encoding
-    #trainX = one_hot_encode(trainX, feature_size)
-    #trainY = one_hot_encode(trainY, feature_size)
-    #trainY_shifted = one_hot_encode(trainY_shifted, feature_size)
-
-    # prepare testing data
-    #testX = pad_sequences(input_length, test[:, 0])
-    #testY = pad_sequences(output_length, test[:, 1])
-    #testY_shifted = shift(testY, output_length)
-
-    # prepare validation data
-    #valX = pad_sequences(input_length, val[:, 0])
-    #valY = pad_sequences(output_length, val[:, 1])
-    #valY_shifted = shift(valY, output_length)
 
     #lengths = [input_length, output_length]
     all_data = [trainX, trainY, trainY_shifted, testX, testY, testY_shifted, valX, valY, valY_shifted]
@@ -352,26 +413,6 @@ def calculate_features(dataset):
     #                unique.append(value)
     #return (len(unique)+1)
     return 1
-
-def pad_sequences(length, lines):
-    #TODO should I pad or not?! -> No!
-    """
-    pad the sequence at the end to length with 0's
-    :param length:
-    :param lines:
-    :return:
-    """
-    #pad sequences with 0 values at the end
-    padded_list = array([])
-    linenumber = 0
-    for line in lines:
-        padding = line if len(line) == length else line + ([0]*(length-len(line)))
-        padded_list = np.append(padded_list, padding, axis=0)
-        linenumber += 1
-    #print(padded_list)
-    padded_list = padded_list.reshape(linenumber, length, 1)
-    #print(padded_list)
-    return padded_list
 
 def shift(sequences, length):
     """

@@ -31,6 +31,7 @@ if __name__ == '__main__':
     #location where the folders are, which are containing the defining csv files
     location = 'data'
     # location of the CIF folder, containing the CIF csv file
+    # csv files are supposed to NOT have an empty last line!!!
     location_CIF = os.path.join(location, 'CIF', 'cif_dataset_complete.csv')
     location_Theta = os.path.join(location, 'Theta-Predictions', 'theta_25_h3.csv')
     location_Theta2 = os.path.join(location, 'Theta-Predictions', 'theta_25_h3_CIF.csv')
@@ -38,24 +39,26 @@ if __name__ == '__main__':
     #percentage of rows that were used to train Theta and need to be skipped for usage in our networks
     percentage = 0.25
     #defines the ratio of train, validation and test set the whole dataset is split into
-    split_ratio = [0.8, 0.2]
+    split_ratio = [0.7, 0.3]#must add up to 1
     #the last x values which are to be used for forecasting values
     window_size = 7
     #number of steps to move the window
     step_size = 1
     #horizon number of values to be predicted in addition to the horizon defined by the
     horizon = [3] #1,3 #TODO taking only last sample makes support for multiple horizon testing weird, therefore only one for now
+    #TODO however now it would work, but since I am lazy and had to add the function change_test_to_true_horizon I didnt account for that there
+    use_csv_horizon = False #instead of using the defined horizon use the horizon defined by the csv
     #for model
-    n_epochs = 200
+    n_epochs = 600
     batch_size = 8
 
     # format Theta file
-    utils.convert_Theta_to_CIF_format(location_Theta)
+    utils.convert_Theta_to_CIF_format(location_Theta, location_CIF, percentage)
 
     #create the pkl files for training, validating and testing
-    data.create_Pkl_CIF_File(location_CIF, saving_location, percentage, split_ratio, window_size, step_size, horizon)
+    data.create_Pkl_CIF_File(location_CIF, saving_location, percentage, split_ratio, window_size, step_size, horizon, use_csv_horizon, step_size)
 
-    data.create_Pkl_Theta_File(location_Theta2, saving_location, percentage, split_ratio, window_size, step_size, horizon)
+    data.create_Pkl_Theta_File(location_Theta2, saving_location, percentage, split_ratio, window_size, step_size, horizon, use_csv_horizon, step_size)
 
     #load pkl files
     dataset = data.load_pkl(os.path.join(saving_location, 'allData.pkl'))
@@ -102,8 +105,9 @@ if __name__ == '__main__':
         mapes = []
         #XXX_shiftedS is the expert data, #TODO rename
         for trainXS, trainYS, trainY_shiftedS, testXS, testYS, testY_shiftedS, valXS, valYS, valY_shiftedS in zip(trainX, trainY, trainY_theta, testX, testY, testY_theta, valX, valY, valY_theta):
-
-            model, name = network.define_model_1_changed(feature_size, input_length, horizon)
+            #print(trainYS)
+            #print(trainY_shiftedS)
+            model, name = network.define_model_1_benchmark(feature_size, input_length, horizon)
             model.compile(optimizer='adam', loss='mean_squared_error')
 
             # compile model for each single sequence
@@ -127,8 +131,9 @@ if __name__ == '__main__':
             #get the predictions from targets matching with the current horizon
             trainYS = utils.get_matching_predictions(trainYS, current_horizon)
             trainY_shiftedS = utils.get_matching_predictions(trainY_shiftedS, current_horizon)
-            testYS = utils.get_matching_predictions(testYS, current_horizon)
-            testY_shiftedS = utils.get_matching_predictions(testY_shiftedS, current_horizon)
+            test_horizon = len(testYS[0][0]) #TODO another reason to not support multiple horizons
+            testYS = utils.get_matching_predictions(testYS, test_horizon) #TODO another reason to not support multiple horizons
+            testY_shiftedS = utils.get_matching_predictions(testY_shiftedS, test_horizon) #TODO another reason to not support multiple horizons
             valYS = utils.get_matching_predictions(valYS, current_horizon)
             valY_shiftedS = utils.get_matching_predictions(valY_shiftedS, current_horizon)
             #Because the length of the horizon determines the sample number we have to get it from the train sets!
@@ -164,13 +169,13 @@ if __name__ == '__main__':
             valYS = utils.shape_transformed_toinput(valYS, example_number_val, current_horizon)
             trainY_shiftedS = utils.shape_transformed_toinput(trainY_shiftedS, example_number_train, current_horizon)
             valY_shiftedS = utils.shape_transformed_toinput(valY_shiftedS, example_number_val, current_horizon)
-            testY_shiftedS = utils.shape_transformed_toinput(testY_shiftedS, example_number_test, current_horizon)
+            testY_shiftedS = utils.shape_transformed_toinput(testY_shiftedS, example_number_test, test_horizon)
             #reshape list to match network input #TODO skipped because reshaping is done by transformer now
             #trainXS = array(trainXS).reshape(example_number_train, window_size, 1)
             #trainYS = array(trainYS).reshape(example_number_train, current_horizon, 1)
             #trainY_shiftedS = array(trainY_shiftedS).reshape(example_number_train, current_horizon, 1)
             #testXS = array(testXS).reshape(example_number_test, window_size, 1)
-            testYS = array(testYS).reshape(example_number_test, current_horizon, 1)
+            testYS = array(testYS).reshape(example_number_test, test_horizon, 1)
             #testY_shiftedS = array(testY_shiftedS).reshape(example_number_test, current_horizon, 1)
             #valXS = array(valXS).reshape(example_number_val, window_size, 1)
             #valYS = array(valYS).reshape(example_number_val, current_horizon, 1)
@@ -193,9 +198,14 @@ if __name__ == '__main__':
             #evaluate model
             #model = load_model(fileprefix + '.h5')
             print('Test')
-            #scores = model.evaluate([testXS, testY_shiftedS], testYS)
-            result = model.predict([testXS, testY_shiftedS], batch_size=batch_size, verbose=0)
-            print(result)
+            result = []
+            iter_count = 0
+            while iter_count < test_horizon:
+                result_tmp = model.predict([testXS, (array([testY_shiftedS[0][iter_count:(current_horizon + iter_count)]]))], batch_size=batch_size, verbose=0)
+                iter_count += current_horizon
+                for result_tmp_value in result_tmp[0]:
+                    result += [result_tmp_value[0]]
+            result = array(result).reshape(example_number_test, test_horizon, 1)
             smape = result_compiler.sMAPE(result, testYS, current_horizon, transformer, fileprefix, i)
             mapes += [smape]
             i += 1

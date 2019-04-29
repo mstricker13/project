@@ -1,6 +1,7 @@
 import math
 import sys
 from numpy import array
+from kerasImplTimeSeries.data import ignore_first_percentage
 
 def get_matching_predictions(sequence, horizon):
     """
@@ -16,27 +17,43 @@ def get_matching_predictions(sequence, horizon):
                 result.append(predictions)
     return result
 
-def convert_Theta_to_CIF_format(location):
+def convert_Theta_to_CIF_format(location, location_reference, percentage):
+    #ref file is the normal cif file used to determine the horizon
+    file_ref = open(location_reference, mode='rt', encoding='utf-8')
     file = open(location, mode='rt', encoding='utf-8')
     text = file.read()
+    text_ref = file_ref.read()
     file.close()
     location_new = location.split('.')[0] + '_CIF.' + 'csv'
     file = open(location_new, mode='w+', encoding='utf-8')
     lines = text.split('\n')
+    lines_ref = ignore_first_percentage(text_ref, percentage)
+    lines_ref = lines_ref.split('\n')
     i = 0
     result_text = ''
     for line in lines:
         values = line.split(',')
         values = [value for value in values if value != 'NA']
+        values = values[1:]
         if i >= 2:
-            result_line = ','.join(values)
-            adder = '12,' + '12,'
+            ref_values = lines_ref[i - 2].split(',')
+            ref_values = ref_values[3:]
+            ref_horizon = lines_ref[i-2].split(',')[1]
+            ref_id = lines_ref[i-2].split(',')[0]
+            ref_interval = lines_ref[i-2].split(',')[2]
+            #TODO why the inconsistency, especially why did it work earlier?!
+            if len(ref_values) == len(values):
+                result_line = ','.join(values)
+            else:
+                result_line = ','.join(values[:len(ref_values)])
+            adder = ref_id + ',' + str(ref_horizon) + ',' + ref_interval + ','
             result_line = adder + result_line
             result_text += result_line + '\n'
         i += 1
-    result_text = result_text[:-(2 + len(adder))]
+    result_text = result_text[:-(1 + len(adder))]
     file.write(result_text)
     file.close()
+    file_ref.close()
 
 def to_log(values):
     return [math.log(value) for value in values]

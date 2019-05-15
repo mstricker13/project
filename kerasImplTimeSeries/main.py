@@ -6,6 +6,7 @@ from keras.utils.vis_utils import plot_model
 from keras.callbacks import ModelCheckpoint
 from keras.models import load_model
 from keras import backend as K
+from keras import optimizers
 
 import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
@@ -107,8 +108,9 @@ if __name__ == '__main__':
         for trainXS, trainYS, trainY_shiftedS, testXS, testYS, testY_shiftedS, valXS, valYS, valY_shiftedS in zip(trainX, trainY, trainY_theta, testX, testY, testY_theta, valX, valY, valY_theta):
             #print(trainYS)
             #print(trainY_shiftedS)
-            model, name = network.define_model_1_benchmark(feature_size, input_length, horizon)
-            model.compile(optimizer='adam', loss='mean_squared_error')
+            model, name = network.define_model_1(feature_size, input_length, horizon)
+            optimizer = optimizers.adam(lr=0.00001)
+            model.compile(optimizer=optimizer, loss='mean_squared_error')
 
             # compile model for each single sequence
             # model = modelInfo[0]

@@ -46,9 +46,9 @@ def define_model_Test(features_per_timestep, input_length, output_length):
 
 #the first network
 def define_model_1(features_per_timestep, input_length, output_length):
-    name = 'LSTM_2u512D5_2u512D5_D5_newlr'
+    name = 'Tester'
     n_units = 512
-    dropout = 0.5
+    dropout = 0.0
 
     #define the encoder
     encoder_inputs = Input(shape=(input_length, features_per_timestep))
@@ -116,16 +116,56 @@ def define_model_1_benchmark(features_per_timestep, input_length, output_length)
 
     return model, name
 
-def define_model_1_changed(features_per_timestep, input_length, output_length):
-    name = 'net_512_05D_no_externalD'
+def define_model_1_changed_Rescue(features_per_timestep, input_length, output_length):
+    name = 'Tester3_run3'
     n_units = 512
     dropout = 0.5
 
     #define the encoder
     encoder_inputs = Input(shape=(input_length, features_per_timestep))
 
-    encoder_lstm1 = LSTM(n_units, return_state=True, return_sequences=True, dropout=dropout)
+    encoder_lstm1 = LSTM(n_units, return_state=True, return_sequences=True, dropout=dropout, activation='relu')
     encoder_outputs_lstm1 = encoder_lstm1(encoder_inputs)
+    encoder_lstm2 = LSTM(n_units, return_state=True, dropout=dropout, activation='relu')
+    encoder_outputs_lstm2, state_h, state_c = encoder_lstm2(encoder_outputs_lstm1)
+    #encoder_dropout = Dropout(dropout)
+    #encoder_outputs_dropout = encoder_dropout(encoder_outputs_lstm2)
+    encoder_states = [state_h, state_c]
+
+    #define the decoder
+    decoder_inputs = Input(shape=(output_length, features_per_timestep))
+
+    decoder_lstm1 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation='relu')
+    decoder_outputs_lstm1 = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
+    decoder_lstm2 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation='relu')
+    decoder_outputs_lstm2, _, _ = decoder_lstm2(decoder_outputs_lstm1)
+    #decoder_dropout = Dropout(dropout)
+    #decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm2)
+
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
+    decoder_outputs_value = decoder_dense(decoder_outputs_lstm2)
+
+    decoder_add = Add()
+    decoder_outputs = decoder_add([decoder_outputs_value, decoder_inputs])
+
+    model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+
+    return model, name
+
+def define_model_1_changed(features_per_timestep, input_length, output_length):
+    name = 'Tester3Stacked'
+    n_units = 512
+    dropout = 0.5
+
+    #define the encoder
+    encoder_inputs = Input(shape=(input_length, features_per_timestep))
+    encoder_expert = Input(shape=(input_length, features_per_timestep))
+
+    encoder_add = Add()
+    encoder_inputs_stacked = encoder_add([encoder_inputs, encoder_expert])
+
+    encoder_lstm1 = LSTM(n_units, return_state=True, return_sequences=True, dropout=dropout)
+    encoder_outputs_lstm1 = encoder_lstm1(encoder_inputs_stacked)
     encoder_lstm2 = LSTM(n_units, return_state=True, dropout=dropout)
     encoder_outputs_lstm2, state_h, state_c = encoder_lstm2(encoder_outputs_lstm1)
     #encoder_dropout = Dropout(dropout)
@@ -148,7 +188,7 @@ def define_model_1_changed(features_per_timestep, input_length, output_length):
     decoder_add = Add()
     decoder_outputs = decoder_add([decoder_outputs_value, decoder_inputs])
 
-    model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+    model = Model([encoder_inputs, encoder_expert, decoder_inputs], decoder_outputs)
 
     return model, name
 
@@ -237,9 +277,9 @@ def define_model_2(features_per_timestep, input_length, output_length):
     #define the encoder
     encoder_inputs = Input(shape=(input_length, features_per_timestep))
 
-    encoder_lstm1 = LSTM(n_units, return_state=True, return_sequences=True)
+    encoder_lstm1 = LSTM(n_units, return_state=True, return_sequences=True, activation='relu')
     encoder_outputs_lstm1 = encoder_lstm1(encoder_inputs)
-    encoder_lstm2 = LSTM(n_units, return_state=True)
+    encoder_lstm2 = LSTM(n_units, return_state=True, activation='relu')
     encoder_outputs_lstm2, state_h, state_c = encoder_lstm2(encoder_outputs_lstm1)
     encoder_dropout = Dropout(dropout)
     encoder_outputs_dropout = encoder_dropout(encoder_outputs_lstm2)
@@ -248,9 +288,9 @@ def define_model_2(features_per_timestep, input_length, output_length):
     #define the decoder
     decoder_inputs = Input(shape=(output_length, features_per_timestep))
 
-    decoder_lstm1 = LSTM(n_units, return_sequences=True, return_state=True)
+    decoder_lstm1 = LSTM(n_units, return_sequences=True, return_state=True, activation='relu')
     decoder_outputs_lstm1 = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
-    decoder_lstm2 = LSTM(n_units, return_sequences=True, return_state=True)
+    decoder_lstm2 = LSTM(n_units, return_sequences=True, return_state=True, activation='relu')
     decoder_outputs_lstm2, _, _ = decoder_lstm2(decoder_outputs_lstm1)
     decoder_dropout = Dropout(dropout)
     decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm2)

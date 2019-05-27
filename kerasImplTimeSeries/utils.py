@@ -50,13 +50,22 @@ def convert_Theta_to_CIF_format(location, location_reference, percentage):
             result_line = adder + result_line
             result_text += result_line + '\n'
         i += 1
-    result_text = result_text[:-(1 + len(adder))]
+    #result_text = result_text[:-(1 + len(adder))]
+    #-1 because of last empty line at the end
+    result_text = result_text[:-1]
     file.write(result_text)
     file.close()
     file_ref.close()
 
 def to_log(values):
-    return [math.log(value) for value in values]
+    result = list()
+    for value in values:
+        if value == 0.0:
+            value = math.log(value+0.000000000000001)
+        else:
+            value = math.log(value)
+        result.append(value)
+    return result
 
 def shape_transformed_toinput(transformed, size1, size2):
     outer = list()

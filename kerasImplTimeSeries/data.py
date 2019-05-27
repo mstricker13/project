@@ -34,8 +34,8 @@ def create_Pkl_CIF_File(location, saving_location, percentage, split_ratio, wind
     #print(sequences.split('\n')[1].split(','))
 
     #ignore the first $percentage% of rows
+    #sequences = sequences.split('\n')[1]
     sequences = ignore_first_percentage(sequences, percentage)
-
     #print(len(sequences.split('\n')[0].split(',')))
     #print(sequences.split('\n')[0].split(','))
     #print(len(sequences.split('\n')[1].split(',')))
@@ -43,7 +43,6 @@ def create_Pkl_CIF_File(location, saving_location, percentage, split_ratio, wind
 
     #create pairs of values known to network and and the according values which need to be predicted
     sequences = create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon)
-
     #divide data in train, validation and testset
     train_pair, val_pair, test_pair = divide_data(sequences, split_ratio, step_size)
 
@@ -81,8 +80,8 @@ def create_Pkl_Theta_File(location, saving_location, percentage, split_ratio, wi
     #sys.exit()
 
     #create pairs of values known to network and and the according values which need to be predicted
+    #sequences = sequences.split('\n')[1]
     sequences = create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon)
-
     #divide data in train, validation and testset
     train_pair, val_pair, test_pair = divide_data(sequences, split_ratio, step_size)
 
@@ -124,8 +123,8 @@ def ignore_first_percentage(sequences, percentage):
         reduced_values = ','.join(values[:cif_offset] + values[(ignore_first_values + cif_offset):])
         reduced_lines += reduced_values + '\n'
 
-    # -2 because there are 2 empty lines in the end
-    return reduced_lines[:-2]
+    # -1 because there is an empty lines in the end
+    return reduced_lines[:-1]
 
 def create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon):
     """
@@ -154,6 +153,8 @@ def create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon):
         values = line.split(',')
         #check if horizon defined by csv is in defined horizon or not
         horizon_csv = int(values[1])
+        #TODO Dynamic Window sized based on horizon
+        window_size = horizon_csv + 1
         #TODO figure out the bug, for adding horizons the first row where it changes kills it why?
         #if horizon_csv not in horizon:
         #    horizon += [horizon_csv]
@@ -163,6 +164,9 @@ def create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon):
         values = values[3:]
         #convert values from string to float
         values = [float(conversion) for conversion in values]
+        #TODO rescuer uncomment next two lines
+        test_tuple = [values[(-1*(defined_horizon+window_size)):(-1*defined_horizon)], values[(-1*defined_horizon):]]
+        values = values[:(-1*defined_horizon)]
 
         #create list of tuples with [[Learning, PredH1, PredH2,...], [Learning+step, PredH1+step, PredH2+step,...], ...]
         tuple_list = list()
@@ -187,7 +191,9 @@ def create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon):
                 start_value += stepsize
                 i += 1
             first_horizon = False
-        result_sequences.append(tuple_list)
+        #TODO rescuer uncomment next line and remove 2nd next line
+        result_sequences.append(tuple_list + [test_tuple])
+        #result_sequences.append(tuple_list)
     return (result_sequences, horizon_list)
 
 def divide_data(data_tuple, split_ratio, step_size):
@@ -220,7 +226,8 @@ def divide_data(data_tuple, split_ratio, step_size):
         while i < (test_split_abs + val_split_abs + train_split_abs):
             tmp_test.append(sequence[i])
             i += 1
-        tmp_val, tmp_test = change_test_to_true_horizon(tmp_val, tmp_test, horizon, step_size)
+        #TODO rescuer comment the next line
+        #tmp_val, tmp_test = change_test_to_true_horizon(tmp_val, tmp_test, horizon, step_size)
         train.append(tmp_train)
         val.append(tmp_val)
         test.append(tmp_test) #TODO since it looks different make sure that it still works, just don't cast it to array...

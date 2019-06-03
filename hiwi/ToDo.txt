@@ -1,0 +1,4 @@
+1: Takes the percentage number of longest time series, therefore will remove a 
+	lot for shorter time series. -> Check how my code handles it. 
+2: If we don't add it, we start at a meta value, should have happened to with cif
+Did I always take the correct horizon?

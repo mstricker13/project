@@ -1,0 +1,3 @@
+0 at empty spaces
+only 20 epochs
+sometimes error...

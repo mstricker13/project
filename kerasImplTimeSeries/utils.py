@@ -17,14 +17,27 @@ def get_matching_predictions(sequence, horizon):
                 result.append(predictions)
     return result
 
-def convert_Theta_to_CIF_format(location, location_reference, percentage):
+def convert_nn5_to_CIF(in_path, out_path):
+    out = ''
+    with open(in_path) as f:
+        text = f.read()
+    with open(out_path, 'w+') as f:
+        i = 0
+        for line in text.split('\n'):
+            i += 1
+            out += 'ts' + str(i) + ',56,daily,' + line + '\n'
+        f.write(out[:-1])
+
+
+
+def convert_Theta_to_CIF_format(location, location_Theta2, location_reference, percentage):
     #ref file is the normal cif file used to determine the horizon
     file_ref = open(location_reference, mode='rt', encoding='utf-8')
     file = open(location, mode='rt', encoding='utf-8')
     text = file.read()
     text_ref = file_ref.read()
     file.close()
-    location_new = location.split('.')[0] + '_CIF.' + 'csv'
+    location_new = location_Theta2
     file = open(location_new, mode='w+', encoding='utf-8')
     lines = text.split('\n')
     lines_ref = ignore_first_percentage(text_ref, percentage)

@@ -1,7 +1,7 @@
 import os
 import numpy as np
 if __name__ == '__main__':
-    p = os.path.join('output', 'NN5run1', 'TestNN5_th_D_1mean_sMape.txt')
+    p = os.path.join('output', 'Atest6_th_D_1', 'Atest6_th_D_1mean_sMape - Kopie.txt')
     with open(p) as f:
         text = f.read()
     values = list()

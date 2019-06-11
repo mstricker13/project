@@ -1,0 +1,3 @@
+window size = 15
+epoch 20 to 40
+sMape = 24

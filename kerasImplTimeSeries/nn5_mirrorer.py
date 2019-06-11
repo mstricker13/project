@@ -12,7 +12,7 @@ def main():
         new_text_tmp = list()
         for line in text.split('\n'):
             values = line.split(',')
-            if values[i] == '':
+            if values[i] == '???':
                 values[i] = '0.0'
             new_text_tmp.append(values[i])
         t = ','.join(new_text_tmp)

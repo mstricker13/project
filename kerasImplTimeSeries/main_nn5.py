@@ -51,7 +51,7 @@ if __name__ == '__main__':
     #TODO however now it would work, but since I am lazy and had to add the function change_test_to_true_horizon I didnt account for that there
     use_csv_horizon = True #instead of using the defined horizon use the horizon defined by the csv
     #for model
-    n_epochs = 20
+    n_epochs = 100
     batch_size = 8
 
     #create the pkl files for training, validating and testing
@@ -117,7 +117,7 @@ if __name__ == '__main__':
         window_size = input_length
         horizon = len(testYS[0][0])
         #TODO Stacked input
-        model, name = network.define_model_1_nn5(feature_size, input_length, horizon)
+        model, name = network.define_model_2_nn5(feature_size, input_length, horizon)
         #optimizer = optimizers.adam(lr=0.00001)
         model.compile(optimizer='adam', loss='mean_squared_error')
 

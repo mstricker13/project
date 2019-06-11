@@ -1,0 +1,3 @@
+smape=22.825
+To Test: 	Change Batch Size
+			Learning Rate

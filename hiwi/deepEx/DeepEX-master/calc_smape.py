@@ -36,7 +36,7 @@ def sMAPE(prediction, ground_truth, horizon):
 	#CIF and M3 calculate different sMAPE equations, NOT NICE!
     for pred, gt in zip(prediction, ground_truth):
         #add += (abs(gt - pred) / ((abs(gt) + abs(pred))) / 2)
-        add += (abs(gt - pred) / (gt + pred) / 2)
+        add += (abs(gt - pred) / ((gt + pred) / 2))
     #smape = (add/horizon) * 100
     smape = (add) * 100
     return smape

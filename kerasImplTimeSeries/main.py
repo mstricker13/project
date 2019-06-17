@@ -50,14 +50,14 @@ if __name__ == '__main__':
     #TODO however now it would work, but since I am lazy and had to add the function change_test_to_true_horizon I didnt account for that there
     use_csv_horizon = True #instead of using the defined horizon use the horizon defined by the csv
     #for model
-    n_epochs = 600
-    batch_size = 8
+    n_epochs = 200
+    batch_size = 32
 
     #create the pkl files for training, validating and testing
     data.create_Pkl_CIF_File(location_CIF, saving_location, percentage, split_ratio, window_size, step_size, horizon, use_csv_horizon, step_size)
 
     #format Theta file
-    utils.convert_Theta_to_CIF_format(location_Theta, location_CIF, percentage)
+    utils.convert_Theta_to_CIF_format(location_Theta, location_Theta2, location_CIF, percentage)
     #create the corresponding Theta file for training val, and test
     data.create_Pkl_Theta_File(location_Theta2, saving_location, percentage, split_ratio, window_size, step_size, horizon, use_csv_horizon, step_size)
 
@@ -115,9 +115,10 @@ if __name__ == '__main__':
         window_size = input_length
         horizon = len(testYS[0][0])
         #TODO Stacked input
-        model, name = network.define_model_1_changed_Rescue(feature_size, input_length, horizon)
-        #optimizer = optimizers.adam(lr=0.00001)
-        model.compile(optimizer='adam', loss='mean_squared_error')
+        model, name = network.define_model_REDO3(feature_size, input_length, horizon)
+        optimizer = optimizers.sgd(lr=0.01, decay=1e-3, nesterov=True)#, momentum=0.99, nesterov=True)
+        model.compile(optimizer=optimizer, loss='mean_squared_error')
+        #model.compile(optimizer='adam', loss='mean_squared_error')
 
         # compile model for each single sequence
         # model = modelInfo[0]

@@ -1,0 +1,6 @@
+batch size set to 32
+changed optimizer to sgd
+new optimizer settings: lr=0.1, momentum=0.99, decay=1e-3, nesterov=True
+for 1_X tested only with different combinations of learning rate and decay -> best: lr=0.01, decay=1e-3
+for 2_X tested with lr=0.01, decay=1e-3 and different momentum -> remove
+for 3_X tested with nesterov

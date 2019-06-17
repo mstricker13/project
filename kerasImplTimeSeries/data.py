@@ -154,7 +154,7 @@ def create_n_tuples(sequences, window_size, stepsize, horizon, use_csv_horizon):
         #check if horizon defined by csv is in defined horizon or not
         horizon_csv = int(values[1])
         #TODO Dynamic Window sized based on horizon
-        window_size = 15#horizon_csv + 1
+        window_size = horizon_csv + 1 #15
         #TODO figure out the bug, for adding horizons the first row where it changes kills it why?
         #if horizon_csv not in horizon:
         #    horizon += [horizon_csv]

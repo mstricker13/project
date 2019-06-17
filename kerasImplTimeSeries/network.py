@@ -18,6 +18,7 @@ from keras.layers import TimeDistributed
 from keras.layers import Dropout
 from keras.layers import Input
 from keras.layers import Add
+from keras.layers.normalization import BatchNormalization
 from keras.layers import Flatten
 from keras.callbacks import ModelCheckpoint
 from nltk.translate.bleu_score import corpus_bleu
@@ -192,9 +193,115 @@ def define_model_2_nn5(features_per_timestep, input_length, output_length):
 
     return model, name
 
+def define_model_REDO(features_per_timestep, input_length, output_length):
+    name = 'redone4'
+    n_units = 512
+    dropout = 0.5
+
+    #define the encoder
+    encoder_inputs = Input(shape=(input_length, features_per_timestep))
+
+    encoder_lstm1 = LSTM(n_units, return_state=True, return_sequences=True, dropout=dropout, activation='relu')
+    encoder_outputs_lstm1 = encoder_lstm1(encoder_inputs)
+    encoder_lstm2 = LSTM(n_units, return_state=True, dropout=dropout, activation='relu')
+    encoder_outputs_lstm2, state_h, state_c = encoder_lstm2(encoder_outputs_lstm1)
+    #encoder_dropout = Dropout(dropout)
+    #encoder_outputs_dropout = encoder_dropout(encoder_outputs_lstm2)
+    encoder_states = [state_h, state_c]
+
+    #define the decoder
+    decoder_inputs = Input(shape=(output_length, features_per_timestep))
+
+    decoder_lstm1 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation='relu')
+    decoder_outputs_lstm1 = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
+    decoder_lstm2 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation='relu')
+    decoder_outputs_lstm2, _, _ = decoder_lstm2(decoder_outputs_lstm1)
+    #decoder_dropout = Dropout(dropout)
+    #decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm2)
+
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
+    decoder_outputs_value = decoder_dense(decoder_outputs_lstm2)
+
+    decoder_add = Add()
+    decoder_outputs = decoder_add([decoder_outputs_value, decoder_inputs])
+
+    model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+
+    return model, name
+
+def define_model_REDO3(features_per_timestep, input_length, output_length):
+    name = 'redone5'
+    n_units = 512
+    dropout = 0.5
+
+    #define the encoder
+    encoder_inputs = Input(shape=(input_length, features_per_timestep))
+
+    encoder_lstm1 = LSTM(n_units, return_state=True, return_sequences=True, dropout=dropout, activation='relu')
+    encoder_outputs_lstm1 = encoder_lstm1(BatchNormalization()(encoder_inputs))
+    encoder_lstm2 = LSTM(n_units, return_state=True, dropout=dropout, activation='relu')
+    encoder_outputs_lstm2, state_h, state_c = encoder_lstm2(encoder_outputs_lstm1)
+    #encoder_dropout = Dropout(dropout)
+    #encoder_outputs_dropout = encoder_dropout(encoder_outputs_lstm2)
+    encoder_states = [state_h, state_c]
+
+    #define the decoder
+    decoder_inputs = Input(shape=(output_length, features_per_timestep))
+
+    decoder_lstm1 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation='relu')
+    decoder_outputs_lstm1 = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
+    decoder_lstm2 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation='relu')
+    decoder_outputs_lstm2, _, _ = decoder_lstm2(decoder_outputs_lstm1)
+    #decoder_dropout = Dropout(dropout)
+    #decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm2)
+
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
+    decoder_outputs_value = decoder_dense(decoder_outputs_lstm2)
+
+    decoder_add = Add()
+    decoder_outputs = decoder_add([decoder_outputs_value, decoder_inputs])
+
+    model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+
+    return model, name
+
+def define_model_REDO2(features_per_timestep, input_length, output_length):
+    name = 'redone2'
+    n_units_encoder = 512
+    n_units_decoder = 512
+    dropout = 0.5
+
+    #define the encoder
+    encoder_inputs = Input(shape=(input_length, features_per_timestep))
+
+    encoder_lstm1 = LSTM(n_units_encoder, return_state=True, return_sequences=True, dropout=dropout, activation='relu')
+    encoder_outputs_lstm1, state_h, state_c = encoder_lstm1(encoder_inputs)
+    #encoder_lstm2 = LSTM(n_units, return_state=True, dropout=dropout, activation='relu')
+    #encoder_outputs_lstm2, state_h, state_c = encoder_lstm2(encoder_outputs_lstm1)
+    encoder_states = [state_h, state_c]
+
+    #define the decoder
+    decoder_inputs = Input(shape=(output_length, features_per_timestep))
+
+    decoder_lstm1 = LSTM(n_units_decoder, return_sequences=True, return_state=True, dropout=dropout, activation='relu')
+    decoder_outputs_lstm1, _, _ = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
+    #decoder_lstm2 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation='relu')
+    #decoder_outputs_lstm2, _, _ = decoder_lstm2(decoder_outputs_lstm1)
+    #decoder_dropout = Dropout(dropout)
+    #decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm2)
+
+    decoder_dense = TimeDistributed(Dense(features_per_timestep, activation='softmax'))
+    decoder_outputs_value = decoder_dense(decoder_outputs_lstm1)
+
+    decoder_add = Add()
+    decoder_outputs = decoder_add([decoder_outputs_value, decoder_inputs])
+
+    model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+
+    return model, name
 
 def define_model_1_changed_Rescue(features_per_timestep, input_length, output_length):
-    name = 'Tester3_run3'
+    name = 'Tester3_run3_CHECK1'
     n_units = 512
     dropout = 0.5
 

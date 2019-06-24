@@ -3,8 +3,9 @@ import math
 import numpy as np
 
 def main():
-    gt = 'nn3_no_meta_mirror.csv'
-    theta = 'theta_50_hT_nn3_7.csv'
+    gt = 'cif2015_completeEmptyVal.csv'
+    theta = 'theta_50_hT_cif15_12.csv'
+    horizon = -6
     horizon_index = 2
     mapes = list()
     with open(gt) as f:
@@ -15,7 +16,6 @@ def main():
         values = line.split(',')
         values_theta = line_theta.split(',')
         #horizon = (-1)*int(values[horizon_index])
-        horizon = -18
         #remove empty values
         values = [val for val in values if val != '']
         values_theta = [val for val in values_theta if val != 'NA']
@@ -37,8 +37,8 @@ def sMAPE(prediction, ground_truth, horizon):
     for pred, gt in zip(prediction, ground_truth):
         #add += (abs(gt - pred) / ((abs(gt) + abs(pred))) / 2)
         add += (abs(gt - pred) / ((gt + pred) / 2))
-    #smape = (add/horizon) * 100
-    smape = (add) * 100
+    smape = (add/horizon) * 100
+    #smape = (add) * 100
     return smape
 
 if __name__ == '__main__':

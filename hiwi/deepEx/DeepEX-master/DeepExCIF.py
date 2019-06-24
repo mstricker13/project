@@ -7,6 +7,7 @@
 
 import sys
 import os
+import math
 
 import pandas as pd
 import numpy as np
@@ -39,7 +40,6 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 def make_input(data,window_size,horizon=1):
     length=data.shape[0]
 #     depth=data.shape[2]
-    print(length, window_size, horizon)
     y = np.zeros([length-window_size+1-horizon,horizon])
     output=np.zeros([length-window_size+1-horizon,window_size])
     for i in range(length-window_size-horizon+1):
@@ -98,8 +98,11 @@ def run(d_horizon, d_window, n_epoch, file_index, data_length):
         for horizon in [1]:
 
             final_predictions = np.zeros([data_length, d_horizon])
+            #creates predictions for each time series
             for y in range(data_length):
 
+                #Set Hyperparameters
+                #----------------------------------------------
                 #TODO CHANGE
                 # n_test = d_horizon
                 # horizon = d_horizon  # -----------check
@@ -107,10 +110,11 @@ def run(d_horizon, d_window, n_epoch, file_index, data_length):
                 horizon = n_test
 
                 window_size = d_window
-                if horizon==6:
-                    window_size=7
-                else:
-                    window_size=15
+                #if horizon==6:
+                #    window_size=7
+                #else:
+                #    window_size=15
+                # ----------------------------------------------
 
                 nn_val =np.asarray(data.loc[y][file_index:].dropna().values,dtype=float) #-----cif
                 #nn_val = np.asarray(data.iloc[y].dropna().values, dtype=float) TODO
@@ -234,7 +238,7 @@ def run(d_horizon, d_window, n_epoch, file_index, data_length):
             plt.plot(test_theta[-n_test:], color='orange')
             plt.plot(pred, color='blue')
             plt.plot(test[-(n_test):], color='green')
-            plt.show()
+            #plt.show()
             pred = pred.reshape(pred.size)[:n_test]
             return n_test, final_predictions
 
@@ -297,6 +301,19 @@ def eval(horizon, file_index, n_test, final_predictions):
         preds_k = np.delete(preds_k, zero_indexes, None)
         #     print(sMAPE(val,preds))
 
+        print('!--------!')
+        print(val)
+        print(preds)
+        val = np.exp(val)
+        preds = np.exp(preds)
+        preds_k = np.exp(preds_k)
+        print(val)
+        print(preds)
+        #val = [math.exp(element) for element in val]
+        #preds_k = [math.exp(element) for element in preds_k]
+        #preds = [math.exp(element) for element in preds]
+        print('!--------!')
+
         mape[i, 0] = sMAPE(val, preds, horizon)
         mape[i, 1] = sMAPE(val, preds_k, horizon)
         mse_err[i, 0] = mse(val, preds)
@@ -347,8 +364,8 @@ if __name__ == '__main__':
     predictions = pd.read_csv(os.path.join(d, "theta_25_horg_CIF.csv"), index_col=0, skiprows=[1])
     data_length = data.shape[0]
     d_horizon = 12
-    d_window = -1
-    n_epoch = 2
+    d_window = 7
+    n_epoch = 75
     file_index = 3
     n_test, final_predictions = run(d_horizon, d_window, n_epoch, file_index, data_length)
     eval(d_horizon, file_index, n_test, final_predictions)

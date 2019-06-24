@@ -2,10 +2,10 @@ library(progress)
 library(gdata)
 #need to add this line in console
 #source('C:/Users/Marco/PycharmProjects/DFKI/hiwi/deepEx/DeepEX-master/Fourtheta.R')
-cif = read.csv('C:/Users/Marco/PycharmProjects/DFKI/hiwi/deepEx/DeepEX-master/nn3_no_meta_mirror.csv', header = FALSE) #-----change
+cif = read.csv('C:/Users/Marco/PycharmProjects/DFKI/project/hiwi/deepEx/DeepEX-master/M3C_yearly.csv', header = FALSE) #-----change
 y=cif
 #number of columns which contain meta information and should be ignored
-ignore_col = 0 #3 for cif, 6 for m3 -----change
+ignore_col = 6 #3 for cif, 6 for m3 -----change
 ignore_col_index = ignore_col + 1 #see ToDo 2
 frequency= 7 #try with 12,7,4 -----change
 #rows and columns of input
@@ -30,7 +30,7 @@ for (i in 1:rows) {
   data_fit  = data[,1:s_l] #-------change
   data_nn = data[,(s_l+1):d_l] #-------change
   
-  horizon = 18 #-----change
+  horizon = y[1,3] #-----change
   out = FourTheta(ts(t(data_fit),frequency=frequency),horizon)
   temp = t(as.numeric(out$mean))
   len = length(data_nn)
@@ -62,4 +62,4 @@ for (i in 1:rows) {
   #print(i)
   pb$tick()
 }
-write.csv(final_comb,"C:/Users/Marco/PycharmProjects/DFKI/hiwi/deepEx/DeepEX-master/theta_25_hT_nn3_7.csv") #need to add path -----change
+write.csv(final_comb,"C:/Users/Marco/PycharmProjects/DFKI/project/hiwi/deepEx/DeepEX-master/theta_25_hT_m3y12.csv") #need to add path -----change

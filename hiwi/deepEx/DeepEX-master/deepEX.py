@@ -238,7 +238,7 @@ def run(d_horizon, d_window, n_epoch):
             plt.plot(test_theta[-n_test:], color='orange')
             plt.plot(pred, color='blue')
             plt.plot(test[-(n_test):], color='green')
-            plt.show()
+            #plt.show()
             pred = pred.reshape(pred.size)[:n_test]
             return n_test, final_predictions
 
@@ -346,7 +346,7 @@ def sMAPE(val, preds, horizon):
 if __name__ == '__main__':
     d_horizon = 8
     d_window = 10
-    n_epoch = 2
+    n_epoch = 75
     file_index = 0
     n_test, final_predictions = run(d_horizon, d_window, n_epoch)
     eval(d_horizon, file_index, n_test, final_predictions)

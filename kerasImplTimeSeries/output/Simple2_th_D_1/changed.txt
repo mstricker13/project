@@ -1,0 +1,3 @@
+clipnorm =1.
+optimizer = optimizers.sgd(lr=0.01, decay=1e-3, clipnorm=1., nesterov=True)#, momentum=0.99, nesterov=True)
+True values (not a single normalization step)

@@ -73,10 +73,14 @@ def convert_Theta_to_CIF_format(location, location_Theta2, location_reference, p
 def to_log(values):
     result = list()
     for value in values:
-        if value == 0.0:
-            value = math.log(value+0.000000000000001)
+        if value < 0.05:
+            value = value
+            #value = math.log(value+0.05) #TODO check if right preprocessing
+        #if value == 0.0:
+        #    value = math.log(value+0.000000000000001)
         else:
-            value = math.log(value)
+            #value = math.log(value)
+            value = value
         result.append(value)
     return result
 

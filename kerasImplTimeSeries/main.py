@@ -50,7 +50,7 @@ if __name__ == '__main__':
     #TODO however now it would work, but since I am lazy and had to add the function change_test_to_true_horizon I didnt account for that there
     use_csv_horizon = True #instead of using the defined horizon use the horizon defined by the csv
     #for model
-    n_epochs = 200
+    n_epochs = 400
     batch_size = 32
 
     #create the pkl files for training, validating and testing
@@ -115,8 +115,8 @@ if __name__ == '__main__':
         window_size = input_length
         horizon = len(testYS[0][0])
         #TODO Stacked input
-        model, name = network.define_model_REDO3(feature_size, input_length, horizon)
-        optimizer = optimizers.sgd(lr=0.01, decay=1e-3, nesterov=True)#, momentum=0.99, nesterov=True)
+        model, name = network.define_model_simple1(feature_size, input_length, horizon)
+        optimizer = optimizers.sgd(lr=0.01, decay=1e-3, clipnorm=1.)#, momentum=0.99, nesterov=True)
         model.compile(optimizer=optimizer, loss='mean_squared_error')
         #model.compile(optimizer='adam', loss='mean_squared_error')
 
@@ -226,6 +226,18 @@ if __name__ == '__main__':
         print('Train')
         #TODO Stacked Input
         #history = model.fit([trainXS, trainX_E, trainY_ES], trainYS, epochs=n_epochs, batch_size=batch_size, validation_data=([valXS, valX_E, valY_ES], valYS), callbacks=[checkpoint], verbose=2)
+
+        #print(trainXS)
+        #print(transformer.inverse_transform(trainXS))
+        trainXS = transformer.inverse_transform(trainXS)
+        trainY_ES = transformer.inverse_transform(trainY_ES)
+        trainYS = transformer.inverse_transform(trainYS)
+        valXS = transformer.inverse_transform(valXS)
+        valY_ES = transformer.inverse_transform(valY_ES)
+        valYS = transformer.inverse_transform(valYS)
+        testXS = transformer.inverse_transform(testXS)
+        testY_ES = transformer.inverse_transform(testY_ES)
+
         history = model.fit([trainXS, trainY_ES], trainYS, epochs=n_epochs, batch_size=batch_size,
                             validation_data=([valXS, valY_ES], valYS), callbacks=[checkpoint], verbose=2)
 

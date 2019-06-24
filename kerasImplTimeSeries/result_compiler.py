@@ -22,8 +22,11 @@ def sMAPE(prediction, ground_truth, horizon, transformer, fileprefix, series_cou
         #print(pred)
         #print(gt)
         #prediction has been transformed and logarithmed need to reverse
-        reversed_prediction = transformer.inverse_transform(pred)
-        reversed_prediction = math.exp(reversed_prediction[0])
+
+        #reversed_prediction = transformer.inverse_transform(pred)
+        #reversed_prediction = math.exp(reversed_prediction[0])
+        reversed_prediction = pred[0]
+
         #print(reversed_prediction)
         add += (abs(gt[0] - reversed_prediction) / (((abs(gt[0]) + abs(reversed_prediction))) / 2))
         #add += (abs(gt[0] - pred[0])/((abs(gt[0])+abs(pred[0])))/2)

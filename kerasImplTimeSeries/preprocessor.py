@@ -47,9 +47,10 @@ def identity(values):
 
 
 def cluster_process(trainXS, trainYS, trainY_ES, testXS, testYS, testY_ES, valXS, valYS, valY_ES):
+    seasonality_list = list()
     trainXS, trainYS, trainY_ES, valXS, valYS, valY_ES = change_val_size(trainXS, trainYS, trainY_ES, valXS, valYS, valY_ES)
     trainXS, trainYS, trainY_ES, valXS, valYS, valY_ES, testXS, testY_ES, testYSL = log_series(trainXS, trainYS, trainY_ES, valXS, valYS, valY_ES, testXS, testY_ES, testYS)
-    trainXS, trainYS, trainY_ES, testXS, testYSL, testY_ES, valXS, valYS, valY_ES, seasonality_list = stl(trainXS, trainYS, trainY_ES, testXS, testYSL, testY_ES, valXS, valYS, valY_ES)
+    #trainXS, trainYS, trainY_ES, testXS, testYSL, testY_ES, valXS, valYS, valY_ES, seasonality_list = stl(trainXS, trainYS, trainY_ES, testXS, testYSL, testY_ES, valXS, valYS, valY_ES)
     trainXS, trainYS, trainY_ES, testXS, testY_ES, valXS, valYS, valY_ES, norm_val = normalize(trainXS, trainYS, trainY_ES, testXS, testY_ES, valXS, valYS, valY_ES)
     trainXS, trainYS, trainY_ES, testXS, testY_ES, valXS, valYS, valY_ES = reshape(trainXS, trainYS, trainY_ES, testXS, testY_ES, valXS, valYS, valY_ES)
     return trainXS, trainYS, trainY_ES, testXS, testYS, testY_ES, valXS, valYS, valY_ES, norm_val, seasonality_list

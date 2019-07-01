@@ -33,8 +33,8 @@ if __name__ == '__main__':
     location = 'data'
     # location of the CIF folder, containing the CIF csv file
     # csv files are supposed to NOT have an empty last line!!!
-    location_CIF = os.path.join(location, 'CIF', 'cif_dataset_small.csv')
-    location_Theta = os.path.join(location, 'Theta-Predictions', 'theta_25_horg_small.csv')
+    location_CIF = os.path.join(location, 'CIF', 'cif_dataset_complete.csv')
+    location_Theta = os.path.join(location, 'Theta-Predictions', 'theta_25_horg.csv')
     location_Theta2 = os.path.join(location, 'Theta-Predictions', 'theta_25_horg_CIF.csv')
     saving_location = os.path.join(location, 'processed')
     #percentage of rows that were used to train Theta and need to be skipped for usage in our networks
@@ -115,7 +115,7 @@ if __name__ == '__main__':
         window_size = input_length
         horizon = len(testYS[0][0])
         #TODO Stacked input
-        model, name = network.define_model_2l_simple(feature_size, input_length, horizon)
+        model, name = network.define_model_2lN_simple(feature_size, input_length, horizon)
         optimizer = optimizers.sgd(lr=0.01, decay=1e-3, clipnorm=1.)#, momentum=0.99, nesterov=True)
         #optimizer = optimizers.sgd(clipnorm=1.)
         model.compile(optimizer=optimizer, loss='mean_squared_error')

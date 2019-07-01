@@ -105,9 +105,9 @@ def define_model_2l_simple(features_per_timestep, input_length, output_length):
     return model, name
 
 def define_model_2lN_simple(features_per_timestep, input_length, output_length):
-    name = 'simple6N_1'
-    n_units = 64
-    dropout = 0.5
+    name = 'simplePaper2'
+    n_units = 16
+    dropout = 0.1
     activation = 'tanh'
 
     #define the encoder
@@ -126,7 +126,7 @@ def define_model_2lN_simple(features_per_timestep, input_length, output_length):
     #define the decoder
     decoder_inputs = Input(shape=(output_length, features_per_timestep))
 
-    decoder_lstm1 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation=activation, activity_regularizer=regularizers.l2(0.03)) #, activation='relu', kernel_initializer=glorot_uniform(1)
+    decoder_lstm1 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation=activation) #, activation='relu', kernel_initializer=glorot_uniform(1), activity_regularizer=regularizers.l2(0.03)
     decoder_outputs_lstm1 = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
     decoder_lstm2 = LSTM(n_units, return_sequences=True, return_state=True, dropout=dropout, activation=activation) #, activation='relu', kernel_initializer=glorot_uniform(1)
     decoder_outputs_lstm2 = decoder_lstm2(decoder_outputs_lstm1)

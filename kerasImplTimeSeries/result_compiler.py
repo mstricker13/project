@@ -58,9 +58,10 @@ def sMAPE_paper(prediction, ground_truth, horizon, norm_val, fileprefix, series_
     res_file_gt = open(fileprefix + '_gt' + '.csv', 'a')
     res_file_pred.write('ts' + str(series_counter))
     res_file_gt.write('ts' + str(series_counter))
+    seasonality_list = prediction #TODO important change when adding TSL back
     for pred, gt, season in zip(prediction, ground_truth, seasonality_list):
         reversed_prediction = pred[0] + norm_val
-        reversed_prediction = math.exp(reversed_prediction + season)
+        reversed_prediction = math.exp(reversed_prediction) #+ season)
 
         #reversed_season = math.exp(season)
 

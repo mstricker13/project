@@ -1,0 +1,8 @@
+Mean over all sMapes = 4.186310023799587
+sMape_1 = 1.5967601793379087
+sMape_2 = 1.331819259645929
+sMape_3 = 4.16522333703124
+sMape_4 = 3.249145760654179
+sMape_5 = 10.588601582328677
+n_units = 64, dropout = 0.5
+activity_regularizer=regularizers.l2(0.03) in first lstm decoder

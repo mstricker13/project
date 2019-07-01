@@ -70,6 +70,7 @@ def convert_Theta_to_CIF_format(location, location_Theta2, location_reference, p
     file.close()
     file_ref.close()
 
+
 def to_log(values):
     result = list()
     for value in values:
@@ -79,10 +80,11 @@ def to_log(values):
         #if value == 0.0:
         #    value = math.log(value+0.000000000000001)
         else:
-            #value = math.log(value)
             value = value
+            #value = math.log(value)
         result.append(value)
     return result
+
 
 def shape_transformed_toinput(transformed, size1, size2):
     outer = list()

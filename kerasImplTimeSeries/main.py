@@ -50,7 +50,7 @@ if __name__ == '__main__':
     #TODO however now it would work, but since I am lazy and had to add the function change_test_to_true_horizon I didnt account for that there
     use_csv_horizon = True #instead of using the defined horizon use the horizon defined by the csv
     #for model
-    n_epochs = 400
+    n_epochs = 600
     batch_size = 32
 
     #create the pkl files for training, validating and testing
@@ -115,8 +115,9 @@ if __name__ == '__main__':
         window_size = input_length
         horizon = len(testYS[0][0])
         #TODO Stacked input
-        model, name = network.define_model_simple1(feature_size, input_length, horizon)
+        model, name = network.define_model_2l_simple(feature_size, input_length, horizon)
         optimizer = optimizers.sgd(lr=0.01, decay=1e-3, clipnorm=1.)#, momentum=0.99, nesterov=True)
+        #optimizer = optimizers.sgd(clipnorm=1.)
         model.compile(optimizer=optimizer, loss='mean_squared_error')
         #model.compile(optimizer='adam', loss='mean_squared_error')
 
@@ -158,7 +159,7 @@ if __name__ == '__main__':
         valXS = valXS[:example_number_val]
 
         # transformer using the standardization method on training set
-        transformer = preprocessor.standardization([j for i in trainXS for j in i])
+        transformer = preprocessor.identity([j for i in trainXS for j in i])
         # getting transformer from theta training data
         #transformer_expert = preprocessor.standardization([j for i in trainY_ES for j in i])
         #transformer_expert = preprocessor.standardization([j for i in trainY_ES for j in i])
@@ -229,14 +230,14 @@ if __name__ == '__main__':
 
         #print(trainXS)
         #print(transformer.inverse_transform(trainXS))
-        trainXS = transformer.inverse_transform(trainXS)
-        trainY_ES = transformer.inverse_transform(trainY_ES)
-        trainYS = transformer.inverse_transform(trainYS)
-        valXS = transformer.inverse_transform(valXS)
-        valY_ES = transformer.inverse_transform(valY_ES)
-        valYS = transformer.inverse_transform(valYS)
-        testXS = transformer.inverse_transform(testXS)
-        testY_ES = transformer.inverse_transform(testY_ES)
+        #trainXS = transformer.inverse_transform(trainXS)
+        #trainY_ES = transformer.inverse_transform(trainY_ES)
+        #trainYS = transformer.inverse_transform(trainYS)
+        #valXS = transformer.inverse_transform(valXS)
+        #valY_ES = transformer.inverse_transform(valY_ES)
+        #valYS = transformer.inverse_transform(valYS)
+        #testXS = transformer.inverse_transform(testXS)
+        #testY_ES = transformer.inverse_transform(testY_ES)
 
         history = model.fit([trainXS, trainY_ES], trainYS, epochs=n_epochs, batch_size=batch_size,
                             validation_data=([valXS, valY_ES], valYS), callbacks=[checkpoint], verbose=2)

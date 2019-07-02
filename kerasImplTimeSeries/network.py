@@ -144,3 +144,40 @@ def define_model_2lN_simple(features_per_timestep, input_length, output_length):
     model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
     return model, name
+
+
+def define_model_2l_chattha_simple(features_per_timestep, input_length, output_length):
+    name = 'simpleChattha2'
+    n_units = 16
+    dropout = 0.0
+
+    #define the encoder
+    encoder_inputs = Input(batch_shape=(1, input_length, features_per_timestep))
+
+    encoder_lstm1 = LSTM(32, return_sequences=True, dropout=dropout, stateful=True) #, activation='relu', return_state=True
+    encoder_outputs_lstm1 = encoder_lstm1(encoder_inputs)
+    encoder_lstm2 = LSTM(16, return_state=True, dropout=dropout, stateful=True) #, activation='relu'
+    encoder_outputs_lstm2, state_h, state_c = encoder_lstm2(encoder_outputs_lstm1)
+    #encoder_dropout = Dropout(dropout)
+    #encoder_outputs_dropout = encoder_dropout(encoder_outputs_lstm2)
+    encoder_states = [state_h, state_c]
+
+    #define the decoder
+    decoder_inputs = Input(batch_shape=(1, output_length, features_per_timestep))
+
+    decoder_lstm1 = LSTM(16, return_sequences=True, dropout=dropout, stateful=True) #, activation='relu' , activity_regularizer=regularizers.l2(0.03), return_state=True
+    decoder_outputs_lstm1 = decoder_lstm1(decoder_inputs, initial_state=encoder_states)
+    decoder_lstm2 = LSTM(16, return_sequences=True, return_state=True, dropout=dropout, stateful=True) #, activation='relu'
+    decoder_outputs_lstm2, _, _ = decoder_lstm2(decoder_outputs_lstm1)
+    #decoder_dropout = Dropout(dropout)
+    #decoder_outputs_dropout = decoder_dropout(decoder_outputs_lstm2)
+
+    decoder_dense = TimeDistributed(Dense(features_per_timestep))
+    decoder_outputs_value = decoder_dense(decoder_outputs_lstm2)
+
+    decoder_add = Add()
+    decoder_outputs = decoder_add([decoder_outputs_value, decoder_inputs])
+
+    model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
+
+    return model, name

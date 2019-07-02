@@ -33,8 +33,8 @@ if __name__ == '__main__':
     location = 'data'
     # location of the CIF folder, containing the CIF csv file
     # csv files are supposed to NOT have an empty last line!!!
-    location_CIF = os.path.join(location, 'CIF', 'cif_dataset_complete.csv')
-    location_Theta = os.path.join(location, 'Theta-Predictions', 'theta_25_horg.csv')
+    location_CIF = os.path.join(location, 'CIF', 'cif_dataset_difficult.csv')
+    location_Theta = os.path.join(location, 'Theta-Predictions', 'theta_25_horg_difficult.csv')
     location_Theta2 = os.path.join(location, 'Theta-Predictions', 'theta_25_horg_CIF.csv')
     saving_location = os.path.join(location, 'processed')
     #percentage of rows that were used to train Theta and need to be skipped for usage in our networks
@@ -50,8 +50,8 @@ if __name__ == '__main__':
     #TODO however now it would work, but since I am lazy and had to add the function change_test_to_true_horizon I didnt account for that there
     use_csv_horizon = True #instead of using the defined horizon use the horizon defined by the csv
     #for model
-    n_epochs = 600
-    batch_size = 32
+    n_epochs = 100
+    batch_size = 1
 
     #create the pkl files for training, validating and testing
     data.create_Pkl_CIF_File(location_CIF, saving_location, percentage, split_ratio, window_size, step_size, horizon, use_csv_horizon, step_size)
@@ -115,9 +115,9 @@ if __name__ == '__main__':
         window_size = input_length
         horizon = len(testYS[0][0])
         #TODO Stacked input
-        model, name = network.define_model_2l_simple(feature_size, input_length, horizon)
-        optimizer = optimizers.sgd(lr=0.01, decay=1e-3, clipnorm=1.)#, momentum=0.99, nesterov=True)
-        #optimizer = optimizers.sgd(clipnorm=1.)
+        model, name = network.define_model_2l_chattha_simple(feature_size, input_length, horizon)
+        #optimizer = optimizers.sgd(lr=0.01, decay=1e-3, clipnorm=1.)#, momentum=0.99, nesterov=True)
+        optimizer = optimizers.adam(lr=0.001, clipnorm=1.)
         model.compile(optimizer=optimizer, loss='mean_squared_error')
         #model.compile(optimizer='adam', loss='mean_squared_error')
 
@@ -239,6 +239,8 @@ if __name__ == '__main__':
         #testXS = transformer.inverse_transform(testXS)
         #testY_ES = transformer.inverse_transform(testY_ES)
 
+        trainXS, trainY_ES, trainYS, valXS, valY_ES, valYS, testXS, testY_ES, mean, std = utils.scale_per_window(trainXS, trainY_ES, trainYS, valXS, valY_ES, valYS, testXS, testY_ES)
+
         history = model.fit([trainXS, trainY_ES], trainYS, epochs=n_epochs, batch_size=batch_size,
                             validation_data=([valXS, valY_ES], valYS), callbacks=[checkpoint], verbose=2)
 
@@ -265,7 +267,8 @@ if __name__ == '__main__':
         #    for result_tmp_value in result_tmp[0]:
         #        result += [result_tmp_value[0]]
         result = array(result).reshape(example_number_test, test_horizon, 1)
-        smape = result_compiler.sMAPE(result, testYS, current_horizon, transformer, fileprefix, i)
+        #smape = result_compiler.sMAPE(result, testYS, current_horizon, transformer, fileprefix, i)
+        smape = result_compiler.sMAPE_self_stand(result, testYS, current_horizon, mean, std, fileprefix, i)
         mapes += [smape]
         i += 1
         tf.reset_default_graph()

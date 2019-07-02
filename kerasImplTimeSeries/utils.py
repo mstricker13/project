@@ -2,6 +2,7 @@ import math
 import sys
 from numpy import array
 from kerasImplTimeSeries.data import ignore_first_percentage
+import numpy as np
 
 def get_matching_predictions(sequence, horizon):
     """
@@ -95,3 +96,26 @@ def shape_transformed_toinput(transformed, size1, size2):
         outer += [inner]
     outer = array(outer).reshape(size1, size2, 1)
     return outer
+
+
+def scale_per_window(trainXS, trainY_ES, trainYS, valXS, valY_ES, valYS, testXS, testY_ES):
+    trainXS, _, _ = scale(trainXS)
+    trainY_ES, _, _ = scale(trainY_ES)
+    trainYS, _, _ = scale(trainYS)
+    valXS, _, _ = scale(valXS)
+    valY_ES, _, _ = scale(valY_ES)
+    valYS, _, _ = scale(valYS)
+    testXS, _, _ = scale(testXS)
+    testY_ES, mean, std = scale(testY_ES)
+
+    return trainXS, trainY_ES, trainYS, valXS, valY_ES, valYS, testXS, testY_ES, mean, std
+
+def scale(series):
+    j = 0
+    mean_last = np.mean(series[-1])
+    std_last = np.std(series[-1])
+    for i in series:
+        new = (i - np.mean(i))/np.std(i)
+        series[j] = new
+        j += 1
+    return series, mean_last, std_last

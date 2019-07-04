@@ -365,7 +365,7 @@ if __name__ == '__main__':
     data_length = data.shape[0]
     d_horizon = 12
     d_window = 7
-    n_epoch = 75
+    n_epoch = 2
     file_index = 3
     n_test, final_predictions = run(d_horizon, d_window, n_epoch, file_index, data_length)
     eval(d_horizon, file_index, n_test, final_predictions)

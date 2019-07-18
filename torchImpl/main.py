@@ -33,7 +33,7 @@ def main():
     horizon = 3 # None to use horizon of csv file
     train_split = 0.7
     batch_size = 32
-    shuffle_dataset = True
+    shuffle_dataset = False
     random_seed = 42
     N_EPOCHS = 30
     CLIP = 1
@@ -43,6 +43,7 @@ def main():
 
     sequences = load(path)
     # TODO For sequence in sequences
+    # TODO Remove first percentage many elements from sequence
     # TODO need to remove overlap in testset
     # TODO correct normalization
     # for now test on only one sequence
@@ -74,21 +75,26 @@ def main():
 
     #get iterators for data and vocabularies
     #BATCH_SIZE = 128
-    #train_iterator2, valid_iterator, test_iterator, SRC, TRG = data.startDataProcess(32, device)
+    train_iterator2, valid_iterator2, test_iterator2, SRC, TRG = data.startDataProcess(32, device)
     #for t, t2 in zip(train_iterator, train_iterator2):
     #    print(t['input'].size(), t2.src.size())
     #    print(t['output'].size(), t2.trg.size())
     #    sys.exit()
+    #print(len(SRC.vocab))
+    for t in test_iterator:
+        print(t['input'])
+        print(t['output'])
+    sys.exit()
 
     print('Define Model')
 
     #define parameters for model architecture
-    INPUT_DIM = 7 #TODO adapt to flag
-    OUTPUT_DIM = horizon
+    INPUT_DIM = 1 #TODO adapt to flag
+    OUTPUT_DIM = 1
     ENC_EMB_DIM = 256
     DEC_EMB_DIM = 256
-    HID_DIM = 512
-    N_LAYERS = 2
+    HID_DIM = 16
+    N_LAYERS = 1
     ENC_DROPOUT = 0.5
     DEC_DROPOUT = 0.5
 
@@ -118,8 +124,10 @@ def main():
 
     #evaluate trained model
     model.load_state_dict(torch.load(MODEL_SAVE_PATH))
-    test_loss = training.evaluate(model, test_iterator, criterion)
-    print(f'| Test Loss: {test_loss:.3f} | Test PPL: {math.exp(test_loss):7.3f} |')
+    test_loss, output, gt = training.evaluate_result(model, test_iterator, criterion)
+    print(output)
+    print(gt)
+    print(f'| Test Loss: {test_loss:.3f} |')
 
     #Test Loss after 30 Epochs: 3.331
 
@@ -231,9 +239,9 @@ class TimeSeriesDataset(Dataset):
         """
         x, y = self.x[idx], self.y[idx]
         x = np.array([x]).astype('double') #[x]
-        x = x.reshape(1, -1)
+        x = x.reshape(-1, 1)
         y = np.array([y]).astype('double')
-        y = y.reshape(1, -1)
+        y = y.reshape(-1, 1)
 
         sample = {'input': x, 'output': y}
 

@@ -3,6 +3,7 @@ import torch.nn as nn
 import os
 import time
 import math
+import sys
 
 def train(model, iterator, optimizer, criterion, clip):
     model.train()
@@ -14,18 +15,19 @@ def train(model, iterator, optimizer, criterion, clip):
         src = batch['input']
         trg = batch['output']
 
-        optimizer.zero_grad()
+        src = src.view(src.size(1), src.size(0), src.size(2))
+        trg = trg.view(trg.size(1), trg.size(0), trg.size(2))
+        #print('encoder', src.double().size())
 
-        print(src)
-        print(src.size())
+        optimizer.zero_grad()
 
         output = model(src.double(), trg.double())
 
         # trg = [trg sent len, batch size]
         # output = [trg sent len, batch size, output dim]
 
-        output = output[1:].view(-1, output.shape[-1])
-        trg = trg[1:].view(-1)
+        output = output[1:].view(-1, output.shape[-1]).double()
+        trg = trg[1:].view(-1).double()
 
         # trg = [(trg sent len - 1) * batch size]
         # output = [(trg sent len - 1) * batch size, output dim]
@@ -53,13 +55,16 @@ def evaluate(model, iterator, criterion):
             src = batch['input']
             trg = batch['output']
 
-            output = model(src, trg, 0)  # turn off teacher forcing
+            src = src.view(src.size(1), src.size(0), src.size(2))
+            trg = trg.view(trg.size(1), trg.size(0), trg.size(2))
+
+            output = model(src.double(), trg.double(), 0)  # turn off teacher forcing
 
             # trg = [trg sent len, batch size]
             # output = [trg sent len, batch size, output dim]
 
-            output = output[1:].view(-1, output.shape[-1])
-            trg = trg[1:].view(-1)
+            output = output[1:].view(-1, output.shape[-1]).double()
+            trg = trg[1:].view(-1).double()
 
             # trg = [(trg sent len - 1) * batch size]
             # output = [(trg sent len - 1) * batch size, output dim]
@@ -69,6 +74,37 @@ def evaluate(model, iterator, criterion):
             epoch_loss += loss.item()
 
     return epoch_loss / len(iterator)
+
+def evaluate_result(model, iterator, criterion):
+    model.eval()
+
+    epoch_loss = 0
+
+    with torch.no_grad():
+        for i, batch in enumerate(iterator):
+            src = batch['input']
+            trg = batch['output']
+
+            src = src.view(src.size(1), src.size(0), src.size(2))
+            trg = trg.view(trg.size(1), trg.size(0), trg.size(2))
+
+            output = model(src.double(), trg.double(), 0)  # turn off teacher forcing
+
+            # trg = [trg sent len, batch size]
+            # output = [trg sent len, batch size, output dim]
+
+            output = output[1:].view(-1, output.shape[-1]).double()
+            trg = trg[1:].view(-1).double()
+
+            # trg = [(trg sent len - 1) * batch size]
+            # output = [(trg sent len - 1) * batch size, output dim]
+
+            loss = criterion(output, trg)
+
+            epoch_loss += loss.item()
+
+    return epoch_loss / len(iterator), output, trg
+
 
 def epoch_time(start_time, end_time):
     elapsed_time = end_time - start_time
@@ -97,6 +133,7 @@ def start_training(SAVE_DIR, MODEL_SAVE_PATH, N_EPOCHS, model, train_iterator, v
         if valid_loss < best_valid_loss:
             best_valid_loss = valid_loss
             torch.save(model.state_dict(), MODEL_SAVE_PATH)
+            print('Validation loss improved saving model')
 
         print(
-            f'| Epoch: {epoch + 1:03} | Time: {epoch_mins}m {epoch_secs}s| Train Loss: {train_loss:.3f} | Train PPL: {math.exp(train_loss):7.3f} | Val.Loss: {valid_loss: .3f} | Val.PPL: {math.exp(valid_loss): 7.3f} | ')
+            f'| Epoch: {epoch + 1:03} | Time: {epoch_mins}m {epoch_secs}s| Train Loss: {train_loss:.3f} | Val.Loss: {valid_loss: .3f} |')

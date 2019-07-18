@@ -3,6 +3,8 @@ import torch.nn as nn
 
 import random
 
+import sys
+
 #set random seed to get deterministc results
 SEED = 42
 random.seed(SEED)
@@ -55,7 +57,7 @@ class Decoder(nn.Module):
 
         #self.embedding = nn.Embedding(output_dim, emb_dim)
 
-        self.rnn = nn.LSTM(hid_dim, hid_dim, n_layers, dropout=dropout)
+        self.rnn = nn.LSTM(output_dim, hid_dim, n_layers, dropout=dropout)
 
         self.out = nn.Linear(hid_dim, output_dim)
 
@@ -113,6 +115,9 @@ class Seq2Seq(nn.Module):
         # teacher_forcing_ratio is probability to use teacher forcing
         # e.g. if teacher_forcing_ratio is 0.75 we use ground-truth inputs 75% of the time
 
+        #print('seq2seq', trg.shape[1])
+        #sys.exit()
+        
         batch_size = trg.shape[1]
         max_len = trg.shape[0]
         trg_vocab_size = self.decoder.output_dim
@@ -130,7 +135,7 @@ class Seq2Seq(nn.Module):
             output, hidden, cell = self.decoder(input, hidden, cell)
             outputs[t] = output
             teacher_force = random.random() < teacher_forcing_ratio
-            top1 = output.max(1)[1]
+            top1 = output.max(1)[1].view(batch_size, trg_vocab_size).double()
             input = (trg[t] if teacher_force else top1)
 
         return outputs

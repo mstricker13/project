@@ -9,13 +9,17 @@ def train(model, iterator, optimizer, criterion, clip):
 
     epoch_loss = 0
 
+    model = model.double()
     for i, batch in enumerate(iterator):
-        src = batch.src
-        trg = batch.trg
+        src = batch['input']
+        trg = batch['output']
 
         optimizer.zero_grad()
 
-        output = model(src, trg)
+        print(src)
+        print(src.size())
+
+        output = model(src.double(), trg.double())
 
         # trg = [trg sent len, batch size]
         # output = [trg sent len, batch size, output dim]
@@ -46,8 +50,8 @@ def evaluate(model, iterator, criterion):
 
     with torch.no_grad():
         for i, batch in enumerate(iterator):
-            src = batch.src
-            trg = batch.trg
+            src = batch['input']
+            trg = batch['output']
 
             output = model(src, trg, 0)  # turn off teacher forcing
 

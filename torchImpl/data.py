@@ -29,7 +29,7 @@ def load_Data(SRC, TRG):
     # get the data
     train_data, valid_data, test_data = Multi30k.splits(exts=('.de', '.en'), fields=(SRC, TRG))
     table = str.maketrans('', '', string.punctuation)
-    print(f"Number of training examples: {len(train_data.examples)}")
+    #print(f"Number of training examples: {len(train_data.examples)}")
     #print('LOOOOK HEEERRREE')
     #trg = vars(train_data.examples[0])
     #trg = trg['trg']
@@ -38,9 +38,9 @@ def load_Data(SRC, TRG):
     #if len(trg) <= 10:
         #remove
     #sys.exit()
-    print(f"Number of validation examples: {len(valid_data.examples)}")
-    print(f"Number of testing examples: {len(test_data.examples)}")
-    print(vars(train_data.examples[0]))
+    #print(f"Number of validation examples: {len(valid_data.examples)}")
+    #print(f"Number of testing examples: {len(test_data.examples)}")
+    #print(vars(train_data.examples[0]))
     return train_data, valid_data, test_data
 
 def startDataProcess(batch_size, device):
@@ -55,8 +55,8 @@ def startDataProcess(batch_size, device):
     SRC.build_vocab(train_data, min_freq=2)
     TRG.build_vocab(train_data, min_freq=2)
 
-    print(f"Unique tokens in source (de) vocabulary: {len(SRC.vocab)}")
-    print(f"Unique tokens in target (en) vocabulary: {len(TRG.vocab)}")
+    #print(f"Unique tokens in source (de) vocabulary: {len(SRC.vocab)}")
+    #print(f"Unique tokens in target (en) vocabulary: {len(TRG.vocab)}")
 
     train_iterator, valid_iterator, test_iterator = BucketIterator.splits(
         (train_data, valid_data, test_data), batch_size=batch_size, device=device)

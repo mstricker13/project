@@ -19,20 +19,20 @@ class Encoder(nn.Module):
         self.n_layers = n_layers
         self.dropout = dropout
 
-        #self.embedding = nn.Embedding(input_dim, emb_dim)
+        self.embedding = nn.Embedding(input_dim, emb_dim)
 
-        self.rnn = nn.LSTM(input_dim, hid_dim, n_layers, dropout=dropout)
+        self.rnn = nn.LSTM(emb_dim, hid_dim, n_layers, dropout=dropout)
 
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, src):
         # src = [src sent len, batch size]
 
-        #embedded = self.dropout(self.embedding(src))
+        embedded = self.dropout(self.embedding(src))
 
         # embedded = [src sent len, batch size, emb dim]
 
-        outputs, (hidden, cell) = self.rnn(src)
+        outputs, (hidden, cell) = self.rnn(embedded)
 
         # outputs = [src sent len, batch size, hid dim * n directions]
         # hidden = [n layers * n directions, batch size, hid dim]
@@ -53,9 +53,9 @@ class Decoder(nn.Module):
         self.n_layers = n_layers
         self.dropout = dropout
 
-        #self.embedding = nn.Embedding(output_dim, emb_dim)
+        self.embedding = nn.Embedding(output_dim, emb_dim)
 
-        self.rnn = nn.LSTM(hid_dim, hid_dim, n_layers, dropout=dropout)
+        self.rnn = nn.LSTM(emb_dim, hid_dim, n_layers, dropout=dropout)
 
         self.out = nn.Linear(hid_dim, output_dim)
 
@@ -74,11 +74,11 @@ class Decoder(nn.Module):
 
         # input = [1, batch size]
 
-        #embedded = self.dropout(self.embedding(input))
+        embedded = self.dropout(self.embedding(input))
 
         # embedded = [1, batch size, emb dim]
 
-        output, (hidden, cell) = self.rnn(input, (hidden, cell))
+        output, (hidden, cell) = self.rnn(embedded, (hidden, cell))
 
         # output = [sent len, batch size, hid dim * n directions]
         # hidden = [n layers * n directions, batch size, hid dim]

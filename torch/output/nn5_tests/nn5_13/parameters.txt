@@ -1,0 +1,25 @@
+    cif_path = os.path.join('data', 'nn5_3_conv.csv')
+    theta_path = os.path.join('data', 'nn5_3_theta_25_horg.csv')
+    window_flag = '15'  # '7': window_size = 7, 'T': horizon from csv file + 1, None: user-defined horizon + 1  # 'T'
+    horizon = None  # None: use horizon of csv file
+    train_split = 0.7
+    percentage = 0.25  # percentage of elements to be removed due to theta model
+    transform_flag = 'standard'  # standard: standardization, 'identity: nothing, log: log
+    cif_offset = 3
+    batch_size = 32  # 16
+    shuffle_dataset = False
+    random_seed = 42
+    N_EPOCHS = 100  # 100
+    CLIP = 1
+    name_prefix = 'nn5_13'
+    SAVE_DIR = os.path.join('output', 'nn5_tests', name_prefix)
+
+    # define parameters for model architecture
+    INPUT_DIM = 1
+    OUTPUT_DIM = 1
+    HID_DIM = [512, 256]  # [32, 16]
+    N_LAYERS = 3  # 1
+    ENC_DROPOUT = 0.1
+    DEC_DROPOUT = 0.1
+    learning_rate = 0.001  # lr=0.001
+    weight_dec = 0.001

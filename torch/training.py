@@ -6,7 +6,7 @@ import math
 import sys
 
 
-def train(model, iterator, optimizer, criterion, clip):
+def train(model, iterator, optimizer, criterion, clip, all_flag):
     model.train()
 
     epoch_loss = 0
@@ -16,11 +16,22 @@ def train(model, iterator, optimizer, criterion, clip):
         src = batch['input']
         trg = batch['output']
         expert = batch['expert']
+        # print(src)
+        # sys.exit()
 
         src = src.view(src.size(1), src.size(0), src.size(2))
-        trg = trg.view(trg.size(1), trg.size(0), trg.size(2))
-        expert = expert.view(expert.size(1), expert.size(0), expert.size(2))
+        #print(trg.size())
+        #print(trg)
+        if all_flag:
+            trg = trg.view(trg.size(2), trg.size(0), trg.size(1))
+            expert = expert.view(expert.size(2), expert.size(0), expert.size(1))
+        else:
+            trg = trg.view(trg.size(1), trg.size(0), trg.size(2))
+            expert = expert.view(expert.size(1), expert.size(0), expert.size(2))
         #print('encoder', src.double().size())
+        #print(trg)
+        #print(trg.size())
+        #sys.exit()
 
         optimizer.zero_grad()
 
@@ -30,11 +41,13 @@ def train(model, iterator, optimizer, criterion, clip):
         # output = [trg sent len, batch size, output dim]
 
         output = output.view(-1, output.shape[-1]).double()
-        trg = trg.view(-1).double()
+        trg = trg.view(-1, output.shape[-1]).double()
 
         # trg = [(trg sent len - 1) * batch size]
         # output = [(trg sent len - 1) * batch size, output dim]
 
+        #print(output.size())
+        #print(trg.size())
         loss = criterion(output, trg)
 
         loss.backward()
@@ -48,7 +61,7 @@ def train(model, iterator, optimizer, criterion, clip):
     return epoch_loss / len(iterator)
 
 
-def evaluate(model, iterator, criterion):
+def evaluate(model, iterator, criterion, all_flag):
     model.eval()
 
     epoch_loss = 0
@@ -60,8 +73,12 @@ def evaluate(model, iterator, criterion):
             expert = batch['expert']
 
             src = src.view(src.size(1), src.size(0), src.size(2))
-            trg = trg.view(trg.size(1), trg.size(0), trg.size(2))
-            expert = expert.view(expert.size(1), expert.size(0), expert.size(2))
+            if all_flag:
+                trg = trg.view(trg.size(2), trg.size(0), trg.size(1))
+                expert = expert.view(expert.size(2), expert.size(0), expert.size(1))
+            else:
+                trg = trg.view(trg.size(1), trg.size(0), trg.size(2))
+                expert = expert.view(expert.size(1), expert.size(0), expert.size(2))
 
             output = model(src.double(), trg.double(), expert.double())  # turn off teacher forcing
 
@@ -69,7 +86,7 @@ def evaluate(model, iterator, criterion):
             # output = [trg sent len, batch size, output dim]
 
             output = output.view(-1, output.shape[-1]).double()
-            trg = trg.view(-1).double()
+            trg = trg.view(-1, output.shape[-1]).double()
 
             # trg = [(trg sent len - 1) * batch size]
             # output = [(trg sent len - 1) * batch size, output dim]
@@ -81,7 +98,7 @@ def evaluate(model, iterator, criterion):
     return epoch_loss / len(iterator)
 
 
-def evaluate_result(model, iterator, criterion, transform_flag, device):
+def evaluate_result(model, iterator, criterion, transform_flag, device, all_flag):
     model.eval()
 
     epoch_loss = 0
@@ -97,8 +114,12 @@ def evaluate_result(model, iterator, criterion, transform_flag, device):
             std = std.to(device)
 
             src = src.view(src.size(1), src.size(0), src.size(2))
-            trg = trg.view(trg.size(1), trg.size(0), trg.size(2))
-            expert = expert.view(expert.size(1), expert.size(0), expert.size(2))
+            if all_flag:
+                trg = trg.view(trg.size(2), trg.size(0), trg.size(1))
+                expert = expert.view(expert.size(2), expert.size(0), expert.size(1))
+            else:
+                trg = trg.view(trg.size(1), trg.size(0), trg.size(2))
+                expert = expert.view(expert.size(1), expert.size(0), expert.size(2))
 
             output = model(src.double(), trg.double(), expert.double())  # turn off teacher forcing
 
@@ -106,7 +127,7 @@ def evaluate_result(model, iterator, criterion, transform_flag, device):
             # output = [trg sent len, batch size, output dim]
 
             output = output.view(-1, output.shape[-1]).double()
-            trg = trg.view(-1).double()
+            trg = trg.view(-1, output.shape[-1]).double()
 
             # trg = [(trg sent len - 1) * batch size]
             # output = [(trg sent len - 1) * batch size, output dim]
@@ -128,7 +149,7 @@ def epoch_time(start_time, end_time):
 
 
 def start_training(SAVE_DIR, MODEL_SAVE_PATH, N_EPOCHS, model, train_iterator, valid_iterator, optimizer, criterion,
-                   CLIP):
+                   CLIP, all_flag):
     best_valid_loss = float('inf')
 
     if not os.path.isdir(f'{SAVE_DIR}'):
@@ -138,8 +159,8 @@ def start_training(SAVE_DIR, MODEL_SAVE_PATH, N_EPOCHS, model, train_iterator, v
 
         start_time = time.time()
 
-        train_loss = train(model, train_iterator, optimizer, criterion, CLIP)
-        valid_loss = evaluate(model, valid_iterator, criterion)
+        train_loss = train(model, train_iterator, optimizer, criterion, CLIP, all_flag)
+        valid_loss = evaluate(model, valid_iterator, criterion, all_flag)
 
         end_time = time.time()
 

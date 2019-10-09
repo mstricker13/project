@@ -1,0 +1,30 @@
+    concat_input_flag = False
+    all_flag = False  # predict all at once
+    # Define hyperparameters
+    cif_path = os.path.join('data', 'nn5_3_conv.csv')
+    #cif_path = os.path.join('data', 'cif2015_completeEmptyVal.csv')
+    theta_path = os.path.join('data', 'nn5_3_theta_25_horg.csv')
+    #theta_path = os.path.join('data', 'theta_25_hT_cif15_7.csv')
+    window_flag = '15'  # '7': window_size = 7, 'T': horizon from csv file + 1, None: user-defined horizon + 1  # 'T'
+    horizon = '1_many'  # None: use horizon of csv file # 1_many
+    train_split = 0.8
+    percentage = 0.25  # percentage of elements to be removed due to theta model
+    transform_flag = 'standard'  # standard: standardization, 'identity: nothing, log: log
+    cif_offset = 3
+    batch_size = 32  # 16
+    shuffle_dataset = False
+    random_seed = 42
+    N_EPOCHS = 600  # 100
+    CLIP = 1
+    name_prefix = 'nn5_one_train_horizon_6'
+    SAVE_DIR = os.path.join('output', 'nn5_tests', name_prefix)
+
+    # define parameters for model architecture
+    INPUT_DIM = 2 if concat_input_flag else 1
+    OUTPUT_DIM = 1  # 56
+    HID_DIM = [32, 16]  # [64, 32]  # [32, 16]
+    N_LAYERS = 1  # 1
+    ENC_DROPOUT = 0.1
+    DEC_DROPOUT = 0.1
+    learning_rate = 0.001  # lr=0.001
+    weight_dec = 0.001  # l2 penalty # 0.001

@@ -65,7 +65,69 @@ class Decoder(nn.Module):
 
         #TODO change for expert
         result = torch.add(prediction, expert)
-        result = prediction.reshape(result.size())
+        # result = prediction.reshape(result.size())
+
+        return result, hidden_1, cell_1
+
+
+class Encoder_dyn(nn.Module):
+    def __init__(self, input_dim, hid_dim, n_layers, dropout):
+        super().__init__()
+
+        self.input_dim = input_dim
+        self.hid_dim = hid_dim
+        self.n_layers = n_layers
+        self.dropout = dropout
+        self.rnn = [None] * len(hid_dim)
+
+        self.rnn[0] = nn.LSTM(input_dim, hid_dim[0], n_layers, dropout=dropout).to('cuda')
+        for i in range(1, len(hid_dim)):
+            self.rnn[i] = nn.LSTM(hid_dim[i-1], hid_dim[i], n_layers, dropout=dropout).to('cuda')
+
+        #self.dropout = nn.Dropout(dropout)
+
+    def forward(self, src):
+
+        # print(src)
+        outputs, (hidden, cell) = self.rnn[0](src)
+        for rnn in self.rnn[1:]:
+            outputs, (hidden, cell) = rnn(F.relu(outputs))
+
+        return hidden, cell
+
+
+class Decoder_dyn(nn.Module):
+    def __init__(self, output_dim, hid_dim, n_layers, dropout):
+        super().__init__()
+
+        self.hid_dim = hid_dim
+        self.output_dim = output_dim
+        self.n_layers = n_layers
+        self.dropout = dropout
+        self.rnn = [None] * len(hid_dim)
+
+        self.rnn[0] = nn.LSTM(output_dim, hid_dim[-1], n_layers, dropout=dropout).to('cuda')
+        for i in range(1, len(hid_dim)):
+            self.rnn[i] = nn.LSTM(hid_dim[-i], hid_dim[-(i+1)], n_layers, dropout=dropout).to('cuda')
+
+        self.out = nn.Linear(hid_dim[0], output_dim).to('cuda')
+
+        #self.dropout = nn.Dropout(dropout)
+
+    def forward(self, input, expert, hidden, cell):
+
+        input = input.unsqueeze(0)
+        expert = expert.unsqueeze(0)
+
+        output, (hidden_1, cell_1) = self.rnn[0](expert, (hidden, cell))
+        for rnn in self.rnn[1:]:
+            output, (hidden, cell) = rnn(F.relu(output))
+
+        prediction = self.out(F.relu(output).squeeze(0))
+
+        #TODO change for expert
+        result = torch.add(prediction, expert)
+        # result = prediction.reshape(result.size())
 
         return result, hidden_1, cell_1
 
@@ -110,9 +172,9 @@ class Seq2Seq(nn.Module):
             exp = (expert[t])
             # TODO use previous cellstates?
             # TODO change for expert
-            # output, hidden_o, cell_o = self.decoder(input, exp, hidden, cell)
+            output, hidden_o, cell_o = self.decoder(input, exp, hidden, cell)
             # output, hidden_o, cell_o = self.decoder(input, exp, hidden_o, cell_o)
-            output, hidden_o, cell_o = self.decoder(input, no_expert, hidden, cell)
+            # output, hidden_o, cell_o = self.decoder(input, no_expert, hidden, cell)
             # top1 = output.max(1)[1].view(batch_size, trg_vocab_size).double()
             no_expert = output[0]
             outputs[t] = output
@@ -364,105 +426,6 @@ class Seq2Seq_all(nn.Module):
         exp = (expert)
         output, hidden_o, cell_o = self.decoder(input, exp, hidden, cell)
         outputs = output
-
-        return outputs
-
-
-class Encoder_nru(nn.Module):
-    def __init__(self, input_dim, hid_dim, n_layers, dropout):
-        super().__init__()
-
-        self.input_dim = input_dim
-        self.hid_dim = hid_dim
-        self.n_layers = n_layers
-        self.dropout = dropout
-
-        self.rnn = NRU.NRU('cuda', 1, 1, num_layers=n_layers)
-        self.rnn2 = NRU.NRU('cuda', 1, 1, num_layers=n_layers)
-
-        #self.dropout = nn.Dropout(dropout)
-
-    def forward(self, src):
-
-        outputs, hidden = self.rnn(src)
-        outputs, hidden = self.rnn2(F.relu(outputs))
-
-        return hidden
-
-
-class Decoder_nru(nn.Module):
-    def __init__(self, output_dim, hid_dim, n_layers, dropout):
-        super().__init__()
-
-        self.hid_dim = hid_dim
-        self.output_dim = output_dim
-        self.n_layers = n_layers
-        self.dropout = dropout
-
-        self.rnn = NRU.NRU('cuda', 1, 1, num_layers=n_layers)
-        self.rnn2 = NRU.NRU('cuda', 1, 1, num_layers=n_layers)
-
-        self.out = nn.Linear(hid_dim[0], output_dim)
-
-        #self.dropout = nn.Dropout(dropout)
-
-    def forward(self, input, expert, hidden):
-
-        input = input.unsqueeze(0)
-        expert = expert.unsqueeze(0)
-
-        output, hidden = self.rnn(expert, hidden)
-        output, hidden = self.rnn2(F.relu(output))
-
-        prediction = self.out(F.relu(output).squeeze(0))
-
-        result = prediction
-
-        # TODO change for expert
-        result = torch.add(prediction, expert)
-        result = prediction.reshape(result.size())
-
-        return result, hidden
-
-
-class Seq2Seq_nru(nn.Module):
-    def __init__(self, encoder, decoder, device):
-        super().__init__()
-
-        self.encoder = encoder
-        self.decoder = decoder
-        self.device = device
-
-        assert encoder.hid_dim == decoder.hid_dim, "Hidden dimensions of encoder and decoder must be equal!"
-        assert encoder.n_layers == decoder.n_layers, "Encoder and decoder must have equal number of layers!"
-
-    def forward(self, src, trg, expert):
-        batch_size = trg.shape[1]
-        max_len = trg.shape[0]
-        trg_vocab_size = self.decoder.output_dim
-
-        # tensor to store decoder outputs
-        outputs = torch.zeros(max_len, batch_size, trg_vocab_size).to(self.device)
-
-        # last hidden state of the encoder is used as the initial hidden state of the decoder
-        hidden = self.encoder(src)
-
-        # first input to the decoder is the <sos> tokens
-        no_expert = src[-1]
-        # print(no_expert)
-        # print(src)
-        # print(no_expert)
-
-        for t in range(max_len):
-            # TODO check if correct or all at once?!
-            input = (trg[t])
-            exp = (expert[t])
-            # TODO use previous cellstates?
-            #output, hidden_o = self.decoder(input, exp, hidden)
-            output, hidden_o = self.decoder(input, no_expert, hidden)
-            # top1 = output.max(1)[1].view(batch_size, trg_vocab_size).double()
-            no_expert = output[0]
-            outputs[t] = output
 
         return outputs
 

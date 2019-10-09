@@ -11,7 +11,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import training, network, data
+import training_horizon as training
+import network_horizon as network
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -29,26 +30,29 @@ def main():
     # convert_nn5_to_CIF(os.path.join('data', 'nn5.csv'), os.path.join('data', 'nn5_conv.csv'))
     # sys.exit()
 
+    # TODO whole loop flag
     concat_input_flag = False
     all_flag = False  # predict all at once
     # Define hyperparameters
     #cif_path = os.path.join('data', 'nn5_3_conv.csv')
-    cif_path = os.path.join('data', 'cif2015_completeEmptyVal.csv')
+    cif_path = os.path.join('data', 'cif.csv')
+    #cif_path = os.path.join('data', 'cif2015_completeEmptyVal.csv')
     #theta_path = os.path.join('data', 'nn5_3_theta_25_horg.csv')
-    theta_path = os.path.join('data', 'theta_25_hT_cif15_7.csv')
-    window_flag = '7'  # '7': window_size = 7, 'T': horizon from csv file + 1, None: user-defined horizon + 1  # 'T'
-    horizon = None  # None: use horizon of csv file
-    train_split = 0.8
+    #theta_path = os.path.join('data', 'theta_25_hT_cif15_7.csv')
+    theta_path = os.path.join('data', 'theta_25_horg.csv')
+    window_flag = 'T'  # '7': window_size = 7, 'T': horizon from csv file + 1, None: user-defined horizon + 1  # 'T'
+    horizon = None  # None: use horizon of csv file # 1_many
+    train_split = 0.7
     percentage = 0.25  # percentage of elements to be removed due to theta model
     transform_flag = 'standard'  # standard: standardization, 'identity: nothing, log: log
     cif_offset = 3
-    batch_size = 32  # 16
+    batch_size = 16  # 16
     shuffle_dataset = False
     random_seed = 42
     N_EPOCHS = 100  # 100
     CLIP = 1
-    name_prefix = 'cif15_2_2_no_exp'
-    SAVE_DIR = os.path.join('output', 'cif15_tests', name_prefix)
+    name_prefix = 'cif16_final'
+    SAVE_DIR = os.path.join('output', 'cif_16_final', name_prefix)
 
     # define parameters for model architecture
     INPUT_DIM = 2 if concat_input_flag else 1
@@ -69,7 +73,7 @@ def main():
     # TODO Loss curves figures + network graph png
     time_series_id = 1
     mapes = list()
-    for sequence, expert_sequence in zip(sequences[54:55], expert_sequences[54:55]):
+    for sequence, expert_sequence in zip(sequences, expert_sequences):
         print(time_series_id)
         sequence = remove_percentage(sequence, percentage, cif_offset)
         # use torch Dataset to load the sequence
@@ -129,7 +133,7 @@ def main():
         else:
             enc = network.Encoder(INPUT_DIM, HID_DIM, N_LAYERS, ENC_DROPOUT)
             dec = network.Decoder(OUTPUT_DIM, HID_DIM, N_LAYERS, DEC_DROPOUT)
-            model = network.Seq2Seq(enc, dec, device).double().to(device)
+            model = network.Seq2Seq_wholeloop(enc, dec, device).double().to(device)
         print(f'The model has {network.count_parameters(model):,} trainable parameters')
         print(model)
         print(enc)
@@ -189,6 +193,28 @@ def main():
         i += 1
     smape_file.close()
 
+    para_file = open(os.path.join(SAVE_DIR, 'parameters.txt'), 'w')
+    para_file.write('concat_input_flag = ' + str(concat_input_flag) + '\n' +
+                    'all_flag = ' + str(all_flag) + '\n' +
+                    'window_flag = ' + str(window_flag)  + '\n' +
+                    'horizon = ' + str(horizon) + '\n' +
+                    'train_split = ' + str(train_split) + '\n' +
+                    'percentage = ' + str(percentage) + '\n' +
+                    'transform_flag = ' + str(transform_flag) + '\n' +
+                    'batch_size = ' + str(batch_size) + '\n' +
+                    'shuffle_dataset = ' + str(shuffle_dataset) + '\n' +
+                    'random_seed = ' + str(random_seed) + '\n' +
+                    'N_EPOCHS = ' + str(N_EPOCHS) + '\n' +
+                    'CLIP = ' + str(CLIP) + '\n' +
+                    'INPUT_DIM = ' + str(INPUT_DIM) + '\n' +
+                    'OUTPUT_DIM = ' + str(OUTPUT_DIM) + '\n' +
+                    'HID_DIM = ' + str(HID_DIM) + '\n' +
+                    'N_LAYERS = ' + str(N_LAYERS) + '\n' +
+                    'ENC_DROPOUT = ' + str(ENC_DROPOUT) + '\n' +
+                    'DEC_DROPOUT = ' + str(DEC_DROPOUT) + '\n' +
+                    'learning_rate = ' + str(learning_rate) + '\n' +
+                    'weight_dec = ' + str(weight_dec))
+
 
 def load(path):
     """
@@ -242,7 +268,7 @@ def remove_percentage(sequence, percentage, cif_offset):
     return sequence
 
 
-def make_samples(sequence, window, horizon):
+def make_samples(sequence, window, horizon, horizonflag, horizon_test):
     """
     Creates samples from a sequence with the defined window size and horizon
     Will return one numpy array for the window values and one for the horizon values
@@ -253,15 +279,30 @@ def make_samples(sequence, window, horizon):
     :return: 2 numpy arrays
     """
 
-    x = list()
-    y = list()
-    for i in range(len(sequence)-(window+horizon-1)):
-        x_tmp = sequence[i:(i+window)]
-        y_tmp = sequence[(i+window):(i+window+horizon)]
-        x.append(x_tmp)
-        y.append(y_tmp)
-    x, y = remove_overlap(x, y, horizon)
-    return np.array(x), np.array(y)
+    if horizonflag == '1_many':
+        x = list()
+        y = list()
+        x_test = sequence[-(horizon_test+window):-horizon_test]
+        y_test = sequence[-horizon_test:]
+        sequence = sequence[:-(horizon_test+window)]
+        for i in range(len(sequence)-(window+horizon-1)):
+            x_tmp = sequence[i:(i+window)]
+            y_tmp = sequence[(i+window):(i+window+horizon)]
+            x.append(x_tmp)
+            y.append(y_tmp)
+        x.append(x_test)
+        y.append(y_test)
+        return np.array(x), np.array(y)
+    else:
+        x = list()
+        y = list()
+        for i in range(len(sequence)-(window+horizon-1)):
+            x_tmp = sequence[i:(i+window)]
+            y_tmp = sequence[(i+window):(i+window+horizon)]
+            x.append(x_tmp)
+            y.append(y_tmp)
+        x, y = remove_overlap(x, y, horizon)
+        return np.array(x), np.array(y)
 
 
 def make_expert_sample(expert_seq, window_size, horizon):
@@ -281,7 +322,6 @@ def make_expert_sample(expert_seq, window_size, horizon):
         z_in.append(z_in_tmp)
         z.append(z_tmp)
     z, z_in = remove_overlap(z, z_in, horizon)
-    # del z[-horizon:-1]
     return np.array(z), np.array(z_in)
 
 
@@ -419,6 +459,9 @@ def concat_Input(in1, in2):
     # return res
 
 
+def write_parameters():
+    print('a')
+
 class TimeSeriesDataset(Dataset):
     """
     Pytorch Dataset realization of a timeseries
@@ -444,8 +487,13 @@ class TimeSeriesDataset(Dataset):
         # set the horizon to the user definition or if "None" was given to the horizon defined in the csv file
         if horizon is None:
             self.horizon = sequence_par[1]
+            self.horizon_test = -1
+        elif horizon == '1_many':
+            self.horizon = 1
+            self.horizon_test = sequence_par[1]
         else:
             self.horizon = horizon
+            self.horizon_test = -1
 
         # define the size of the window based on the given flag
         # if window_flag == '7':
@@ -465,8 +513,9 @@ class TimeSeriesDataset(Dataset):
             self.window_size = int(window_flag)
 
         # create input window x and output window y
-        self.x, self.y = make_samples(self.sequence, self.window_size, self.horizon)
-        self.expert, self.expert_in = make_expert_sample(self.expert_seq, self.window_size, self.horizon)
+        self.x, self.y = make_samples(self.sequence, self.window_size, self.horizon, horizon, self.horizon_test)
+        #self.expert, self.expert_in = make_expert_sample(self.expert_seq, self.window_size, self.horizon)
+        self.expert_in, self.expert = make_samples(self.expert_seq, self.window_size, self.horizon, horizon, self.horizon_test)
 
         if transform_flag == 'identity':
             self.x, self.y, self.expert, self.expert_in = self.x, self.y, self.expert, self.expert_in

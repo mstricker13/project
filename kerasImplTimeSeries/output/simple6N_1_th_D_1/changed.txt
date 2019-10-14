@@ -1,2 +1,0 @@
-window_size = 7
-3 layer network

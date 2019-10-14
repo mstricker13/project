@@ -1,2 +1,0 @@
-more decoder lstm layers
-epochs 100

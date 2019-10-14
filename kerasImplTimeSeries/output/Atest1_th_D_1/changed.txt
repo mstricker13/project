@@ -1,2 +1,0 @@
-window_size=15
-smape = 23.825

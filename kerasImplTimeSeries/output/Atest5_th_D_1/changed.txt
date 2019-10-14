@@ -1,2 +1,0 @@
-windowsize = 15
-n_units from 512 to 1024

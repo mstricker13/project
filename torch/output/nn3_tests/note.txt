@@ -1,0 +1,1 @@
+if window size > 15 then the first 50 time series had a window size of 14

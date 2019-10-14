@@ -1,0 +1,1 @@
+Mean over all sMapes = nan

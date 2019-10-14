@@ -1,6 +1,0 @@
-Use log for Variance Stabilization
-loess STL -> sum of trend and reminder. Set s.windonw = periodic. 
-	Check for two season 
-normalize by substracting last value in input of trend from all values in
-	input and output window
-change val to contain one sample

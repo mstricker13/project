@@ -34,17 +34,13 @@ def main():
     concat_input_flag = False
     all_flag = False  # predict all at once
     # Define hyperparameters
-
-    #files require no empty line in the end!
     #cif_path = os.path.join('data', 'nn5_3_conv.csv')
-    #cif_path = os.path.join('data', 'cif.csv')
+    cif_path = os.path.join('data', 'cif.csv')
     #cif_path = os.path.join('data', 'cif2015_completeEmptyVal.csv')
-    cif_path = os.path.join('data', 'nn3_no_meta_test_mirror.csv')
     #theta_path = os.path.join('data', 'nn5_3_theta_25_horg.csv')
     #theta_path = os.path.join('data', 'theta_25_hT_cif15_7.csv')
-    #theta_path = os.path.join('data', 'theta_25_horg.csv')
-    theta_path = os.path.join('data', 'theta_25_hT_nn3_12_test.csv') #12: 18.666018379979093
-    window_flag = '14'  # '7': window_size = 7, 'T': horizon from csv file + 1, None: user-defined horizon + 1  # 'T'
+    theta_path = os.path.join('data', 'theta_25_horg.csv')
+    window_flag = 'T'  # '7': window_size = 7, 'T': horizon from csv file + 1, None: user-defined horizon + 1  # 'T'
     horizon = None  # None: use horizon of csv file # 1_many
     train_split = 0.8
     percentage = 0.25  # percentage of elements to be removed due to theta model
@@ -55,8 +51,8 @@ def main():
     random_seed = 42
     N_EPOCHS = 100  # 100
     CLIP = 1
-    name_prefix = 'nn3_bench'
-    SAVE_DIR = os.path.join('output', 'nn3_tests', name_prefix)
+    name_prefix = 'cif16_final8'
+    SAVE_DIR = os.path.join('output', 'cif_16_final', name_prefix)
 
     # define parameters for model architecture
     INPUT_DIM = 2 if concat_input_flag else 1
@@ -78,22 +74,16 @@ def main():
     time_series_id = 1
     mapes = list()
     for sequence, expert_sequence in zip(sequences, expert_sequences):
-
-        #if time_series_id <= 50:
-        #    window_flag = '14'
-        #else:
-        #    window_flag = '15'
         print(time_series_id)
         sequence = remove_percentage(sequence, percentage, cif_offset)
         # use torch Dataset to load the sequence
-        time_series = TimeSeriesDataset(sequence, expert_sequence, cif_offset, window_flag=window_flag, transform_flag=transform_flag,
+        time_series = TimeSeriesDataset(sequence, expert_sequence, window_flag=window_flag, transform_flag=transform_flag,
                                         horizon=horizon, transform=transforms.Compose([ToTensor()]),
                                         concat_input_flag=concat_input_flag, input_dim=INPUT_DIM)
         # dataloader = DataLoader(time_series, batch_size=batch_size, shuffle=True, num_workers=4)
 
         # create train, val and test samples
         dataset_size = len(time_series) - 1
-
         if dataset_size < 2:
             time_series_id += 1
             continue
@@ -477,7 +467,7 @@ class TimeSeriesDataset(Dataset):
     Pytorch Dataset realization of a timeseries
     """
 
-    def __init__(self, sequence_par, expert_sequence_par, cif_offset, window_flag=None, transform_flag='identity', horizon=None, transform=None,
+    def __init__(self, sequence_par, expert_sequence_par, window_flag=None, transform_flag='identity', horizon=None, transform=None,
                  concat_input_flag=False, input_dim=1):
         """
         Initialize the dataset with the given sequence based on the parameters of window size and horizon
@@ -490,7 +480,7 @@ class TimeSeriesDataset(Dataset):
         """
 
         # values of sequence start at position 3
-        self.sequence = sequence_par[cif_offset:]
+        self.sequence = sequence_par[3:]
         self.expert_seq = expert_sequence_par
         self.input_dimension = input_dim
 

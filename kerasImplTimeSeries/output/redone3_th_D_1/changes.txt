@@ -1,2 +1,0 @@
-batch size set to 32
-changed optimizer to sgd

@@ -1,1 +1,0 @@
-rescaled values between 0 and 1 and using log before

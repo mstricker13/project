@@ -1,2 +1,0 @@
-windowsize = 15
-Dropout = 0

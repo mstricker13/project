@@ -1,1 +1,0 @@
-no log normalization in utils and result_compiler

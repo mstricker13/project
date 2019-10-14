@@ -1,4 +1,0 @@
-epoch=400
-optimizer = optimizers.sgd(lr=0.01, decay=1e-3, clipnorm=1.)
-n_units = 8
-dropout = 0.1

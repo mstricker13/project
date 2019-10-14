@@ -1,4 +1,0 @@
-batch size set to 32
-changed optimizer to sgd
-new optimizer settings: lr=0.01, decay=1e-3, nesterov=True
-added batch norm in the end.

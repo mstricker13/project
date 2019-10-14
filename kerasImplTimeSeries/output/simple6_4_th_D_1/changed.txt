@@ -1,6 +1,0 @@
-optimizer = optimizers.sgd(lr=0.1, clipnorm=1.)
-name = 'simple6_4'
-    n_units = 16
-    dropout = 0.1
-2 layer network
-window size = 7

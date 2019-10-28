@@ -30,9 +30,10 @@ def main():
     # convert_nn5_to_CIF(os.path.join('data', 'nn5.csv'), os.path.join('data', 'nn5_conv.csv'))
     # sys.exit()
 
-    # TODO whole loop flag
-    concat_input_flag = False
-    all_flag = False  # predict all at once
+    concat_input_flag = False  # concat the expert predictions into input
+    all_flag = False  # True: predict all at once. False: Predict one value at a time and repeat this horizon times
+    whole_loop_flag = False  # False: perform encoder once. True: perform encoder horizon many times
+    use_exp = True  # True: use expert predictions for predictions. False: Use prediction from previous timestep
     # Define hyperparameters
 
     #files require no empty line in the end!
@@ -138,12 +139,16 @@ def main():
         # TODO make more complex if then else flags and create method for it
         if all_flag:
             enc = network.Encoder_all(INPUT_DIM, HID_DIM, N_LAYERS, ENC_DROPOUT)
-            dec = network.Decoder_all(OUTPUT_DIM, HID_DIM, N_LAYERS, DEC_DROPOUT)
-            model = network.Seq2Seq_all(enc, dec, device).double().to(device)
+            dec = network.Decoder_all(OUTPUT_DIM, HID_DIM, N_LAYERS, DEC_DROPOUT, use_exp)
+            model = network.Seq2Seq_all(enc, dec, device, use_exp).double().to(device)
+            # no need for whole_loop_flag, since it would be unnecessary
         else:
             enc = network.Encoder(INPUT_DIM, HID_DIM, N_LAYERS, ENC_DROPOUT)
-            dec = network.Decoder(OUTPUT_DIM, HID_DIM, N_LAYERS, DEC_DROPOUT)
-            model = network.Seq2Seq(enc, dec, device).double().to(device)
+            dec = network.Decoder(OUTPUT_DIM, HID_DIM, N_LAYERS, DEC_DROPOUT, use_exp)
+            if whole_loop_flag:
+                model = network.Seq2Seq_wholeloop(enc, dec, device, use_exp).double().to(device)
+            else:
+                model = network.Seq2Seq(enc, dec, device, use_exp).double().to(device)
         print(f'The model has {network.count_parameters(model):,} trainable parameters')
         print(model)
         print(enc)
@@ -207,6 +212,8 @@ def main():
     para_file.write('concat_input_flag = ' + str(concat_input_flag) + '\n' +
                     'all_flag = ' + str(all_flag) + '\n' +
                     'window_flag = ' + str(window_flag)  + '\n' +
+                    'whole_loop_flag = ' + str(whole_loop_flag) + '\n' +
+                    'use_exp = ' + str(use_exp) + '\n' +
                     'horizon = ' + str(horizon) + '\n' +
                     'train_split = ' + str(train_split) + '\n' +
                     'percentage = ' + str(percentage) + '\n' +

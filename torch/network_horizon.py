@@ -38,13 +38,14 @@ class Encoder(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, output_dim, hid_dim, n_layers, dropout):
+    def __init__(self, output_dim, hid_dim, n_layers, dropout, use_exp_flag):
         super().__init__()
 
         self.hid_dim = hid_dim
         self.output_dim = output_dim
         self.n_layers = n_layers
         self.dropout = dropout
+        self.exp_flag = use_exp_flag
 
         self.rnn = nn.LSTM(output_dim, hid_dim[1], n_layers, dropout=dropout)
         self.rnn2 = nn.LSTM(hid_dim[1], hid_dim[0], n_layers, dropout=dropout)
@@ -64,8 +65,11 @@ class Decoder(nn.Module):
         prediction = self.out(F.relu(output).squeeze(0))
 
         #TODO change for expert
-        result = torch.add(prediction, expert)
-        # result = prediction.reshape(result.size())
+        if self.exp_flag:
+            result = torch.add(prediction, expert)
+        else:
+            result = torch.add(prediction, expert)
+            result = prediction.reshape(result.size())
 
         return result, hidden_1, cell_1
 
@@ -133,12 +137,13 @@ class Decoder_dyn(nn.Module):
 
 
 class Seq2Seq(nn.Module):
-    def __init__(self, encoder, decoder, device):
+    def __init__(self, encoder, decoder, device, use_exp_flag):
         super().__init__()
 
         self.encoder = encoder
         self.decoder = decoder
         self.device = device
+        self.exp_flag = use_exp_flag
 
         assert encoder.hid_dim == decoder.hid_dim, "Hidden dimensions of encoder and decoder must be equal!"
         assert encoder.n_layers == decoder.n_layers, "Encoder and decoder must have equal number of layers!"
@@ -172,9 +177,11 @@ class Seq2Seq(nn.Module):
             exp = (expert[t])
             # TODO use previous cellstates?
             # TODO change for expert
-            output, hidden_o, cell_o = self.decoder(input, exp, hidden, cell)
+            if self.exp_flag:
+                output, hidden_o, cell_o = self.decoder(input, exp, hidden, cell)
+            else:
+                output, hidden_o, cell_o = self.decoder(input, no_expert, hidden, cell)
             # output, hidden_o, cell_o = self.decoder(input, exp, hidden_o, cell_o)
-            # output, hidden_o, cell_o = self.decoder(input, no_expert, hidden, cell)
             # top1 = output.max(1)[1].view(batch_size, trg_vocab_size).double()
             no_expert = output[0]
             outputs[t] = output
@@ -183,12 +190,13 @@ class Seq2Seq(nn.Module):
 
 
 class Seq2Seq_wholeloop(nn.Module):
-    def __init__(self, encoder, decoder, device):
+    def __init__(self, encoder, decoder, device, use_exp_flag):
         super().__init__()
 
         self.encoder = encoder
         self.decoder = decoder
         self.device = device
+        self.exp_flag = use_exp_flag
 
         assert encoder.hid_dim == decoder.hid_dim, "Hidden dimensions of encoder and decoder must be equal!"
         assert encoder.n_layers == decoder.n_layers, "Encoder and decoder must have equal number of layers!"
@@ -225,9 +233,11 @@ class Seq2Seq_wholeloop(nn.Module):
             exp = (expert[t])
             # TODO use previous cellstates?
             # TODO change for expert
-            output, hidden_o, cell_o = self.decoder(input, exp, hidden, cell)
+            if self.exp_flag:
+                output, hidden_o, cell_o = self.decoder(input, exp, hidden, cell)
+            else:
+                output, hidden_o, cell_o = self.decoder(input, no_expert, hidden, cell)
             # output, hidden_o, cell_o = self.decoder(input, exp, hidden_o, cell_o)
-            # output, hidden_o, cell_o = self.decoder(input, no_expert, hidden, cell)
             # top1 = output.max(1)[1].view(batch_size, trg_vocab_size).double()
             no_expert = output[0]
             outputs[t] = output
@@ -359,13 +369,14 @@ class Encoder_all(nn.Module):
 
 
 class Decoder_all(nn.Module):
-    def __init__(self, output_dim, hid_dim, n_layers, dropout):
+    def __init__(self, output_dim, hid_dim, n_layers, dropout, use_expert_flag):
         super().__init__()
 
         self.hid_dim = hid_dim
         self.output_dim = output_dim
         self.n_layers = n_layers
         self.dropout = dropout
+        self.exp_flag = use_expert_flag
 
         self.rnn = nn.LSTM(output_dim, hid_dim[1], n_layers, dropout=dropout)
         self.rnn2 = nn.LSTM(hid_dim[1], hid_dim[0], n_layers, dropout=dropout)
@@ -390,19 +401,23 @@ class Decoder_all(nn.Module):
         prediction = self.out(F.relu(output).squeeze(0))
 
         #TODO change for expert
-        result = torch.add(prediction, expert)
-        # result = prediction.reshape(result.size())
+        if self.exp_flag:
+            result = torch.add(prediction, expert)
+        else:
+            result = torch.add(prediction, expert)
+            result = prediction.reshape(result.size())
 
         return result, hidden_1, cell_1
 
 
 class Seq2Seq_all(nn.Module):
-    def __init__(self, encoder, decoder, device):
+    def __init__(self, encoder, decoder, device, use_exp_flag):
         super().__init__()
 
         self.encoder = encoder
         self.decoder = decoder
         self.device = device
+        self.exp_flag = use_exp_flag
 
         assert encoder.hid_dim == decoder.hid_dim, "Hidden dimensions of encoder and decoder must be equal!"
         assert encoder.n_layers == decoder.n_layers, "Encoder and decoder must have equal number of layers!"
@@ -424,7 +439,12 @@ class Seq2Seq_all(nn.Module):
 
         input = (trg)
         exp = (expert)
-        output, hidden_o, cell_o = self.decoder(input, exp, hidden, cell)
+        if self.exp_flag:
+            output, hidden_o, cell_o = self.decoder(input, exp, hidden, cell)
+        else:
+            print('Predicting all values at once without expert knowledge is not implemented \n '
+                  'Need an alternative to values. Maybe just use tensor of 0\'s')
+            sys.exit()
         outputs = output
 
         return outputs

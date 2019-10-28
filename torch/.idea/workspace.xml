@@ -1,7 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8911355e-5eb7-4016-b723-f928dcd88e82" name="Default Changelist" comment="" />
+    <list default="true" id="8911355e-5eb7-4016-b723-f928dcd88e82" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/../DeepEX-master/1Test.csv" beforeDir="false" afterPath="$PROJECT_DIR$/../DeepEX-master/1Test.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/gt.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/mean_sMape.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/10_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/11_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/12_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/13_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/14_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/15_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/16_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/17_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/18_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/19_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/1_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/20_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/21_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/22_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/23_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/24_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/25_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/26_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/27_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/28_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/29_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/2_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/30_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/31_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/32_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/33_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/34_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/35_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/36_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/37_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/38_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/39_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/3_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/40_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/41_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/42_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/43_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/44_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/45_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/46_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/47_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/48_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/49_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/4_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/50_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/51_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/52_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/53_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/54_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/55_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/56_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/57_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/58_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/59_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/5_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/60_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/61_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/62_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/63_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/64_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/65_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/66_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/67_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/68_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/69_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/6_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/70_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/71_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/72_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/7_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/8_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/models/9_model.pt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/network.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/predictions.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/cif_16_final/training.py" beforeDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -10,10 +91,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main_horizon.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1184">
+            <state relative-caret-position="4563">
               <caret line="169" column="52" selection-start-line="169" selection-start-column="52" selection-end-line="169" selection-end-column="52" />
               <folding>
                 <element signature="e#0#47#0" expanded="true" />
@@ -23,21 +104,9 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../project/hiwi/deepEx/DeepEX-master/calc_smape.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="108">
-              <caret line="6" column="45" selection-start-line="6" selection-start-column="45" selection-end-line="6" selection-end-column="63" />
-              <folding>
-                <element signature="e#0#9#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/network_horizon.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="810">
+            <state relative-caret-position="1620">
               <caret line="67" column="10" selection-start-line="67" selection-start-column="10" selection-end-line="67" selection-end-column="10" />
               <folding>
                 <element signature="e#0#12#0" expanded="true" />
@@ -94,6 +163,9 @@
       <find>BB</find>
     </findStrings>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
@@ -114,11 +186,12 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1704" />
-    <option name="y" value="9" />
+    <option name="x" value="906" />
+    <option name="y" value="27" />
     <option name="width" value="1941" />
-    <option name="height" value="2127" />
+    <option name="height" value="2124" />
   </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
@@ -148,6 +221,9 @@
       </pane>
       <pane id="Scope" />
     </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -300,8 +376,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1136" y="6" width="1294" height="1418" extended-state="1" />
-    <editor active="true" />
+    <frame x="604" y="18" width="1294" height="1416" extended-state="0" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.12967382" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -430,102 +505,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="10" column="33" lean-forward="true" selection-start-line="10" selection-start-column="33" selection-end-line="10" selection-end-column="33" />
-          <folding>
-            <element signature="e#0#23#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/meaner.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/data.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="432">
-          <caret line="382" column="27" selection-start-line="382" selection-start-column="4" selection-end-line="382" selection-end-column="27" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/preprocessor.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="770">
-          <caret line="81" column="38" selection-start-line="81" selection-start-column="38" selection-end-line="81" selection-end-column="38" />
-          <folding>
-            <element signature="e#98#146#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="457">
-          <caret line="95" column="24" lean-forward="true" selection-start-line="95" selection-start-column="24" selection-end-line="95" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#11#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/network_old.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="14" selection-start-column="9" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/result_compiler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3726">
-          <caret line="138" column="35" lean-forward="true" selection-start-line="138" selection-start-column="35" selection-end-line="138" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Desktop/bla/mape.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="189">
-          <caret line="7" column="26" lean-forward="true" selection-start-line="7" selection-start-column="26" selection-end-line="7" selection-end-column="26" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/main.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6806">
-          <caret line="283" column="17" lean-forward="true" selection-start-line="283" selection-start-column="17" selection-end-line="283" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/network.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3481">
-          <caret line="29" column="23" selection-start-line="29" selection-start-column="17" selection-end-line="29" selection-end-column="23" />
-          <folding>
-            <element signature="e#0#36#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/test.py" />
+    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/meaner.py" />
+    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/data.py" />
+    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/preprocessor.py" />
+    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/utils.py" />
+    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/network_old.py" />
+    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/result_compiler.py" />
+    <entry file="file://$PROJECT_DIR$/../../bla/mape.py" />
+    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/main.py" />
+    <entry file="file://$PROJECT_DIR$/../project/kerasImplTimeSeries/network.py" />
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="54">
@@ -560,16 +549,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../project/hiwi/deepEx/DeepEX-master/nn3_mirrorer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="18" column="20" selection-start-line="18" selection-start-column="20" selection-end-line="18" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/../project/hiwi/deepEx/DeepEX-master/nn3_mirrorer.py" />
+    <entry file="file://$PROJECT_DIR$/../project/hiwi/deepEx/DeepEX-master/calc_smape.py" />
+    <entry file="file://$PROJECT_DIR$/../data_converter.py" />
+    <entry file="file://$PROJECT_DIR$/../m3comparer.py" />
     <entry file="file://$PROJECT_DIR$/main_horizon.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1184">
+        <state relative-caret-position="4563">
           <caret line="169" column="52" selection-start-line="169" selection-start-column="52" selection-end-line="169" selection-end-column="52" />
           <folding>
             <element signature="e#0#47#0" expanded="true" />
@@ -577,12 +563,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../project/hiwi/deepEx/DeepEX-master/calc_smape.py">
+    <entry file="file://$PROJECT_DIR$/network_horizon.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="108">
-          <caret line="6" column="45" selection-start-line="6" selection-start-column="45" selection-end-line="6" selection-end-column="63" />
+        <state relative-caret-position="1620">
+          <caret line="67" column="10" selection-start-line="67" selection-start-column="10" selection-end-line="67" selection-end-column="10" />
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#0#12#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -591,34 +577,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3186">
           <caret line="123" selection-start-line="123" selection-end-line="123" />
-          <folding>
-            <element signature="e#0#12#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Desktop/project/data_converter.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Desktop/project/m3comparer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-558">
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/network_horizon.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="810">
-          <caret line="67" column="10" selection-start-line="67" selection-start-column="10" selection-end-line="67" selection-end-column="10" />
           <folding>
             <element signature="e#0#12#0" expanded="true" />
           </folding>

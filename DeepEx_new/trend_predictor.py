@@ -120,7 +120,7 @@ def run():
 
             result = stl(ts(series, frequency=frequency), "periodic")
             temp = pandas2ri.ri2py(result.rx2('time.series'))
-            series_1 = temp[:, 0] + temp[:, 2]  # extracting the seasonality and the residual component from the data
+            series_1 = temp[:, 1] + temp[:, 2]  # extracting the seasonality and the residual component from the data
 
             # defining train,test and validation split
             t_v_data = series_1[:-n_test]
@@ -144,7 +144,7 @@ def run():
             temp_theta1 = np.log(temp_theta1)
             result_k = stl(ts(temp_theta1, frequency=frequency), "periodic")
             temp_theta = pandas2ri.ri2py(result_k.rx2('time.series'))
-            series_k_org = temp_theta[:, 0] + temp_theta[:, 2]
+            series_k_org = temp_theta[:, 1] + temp_theta[:, 2]
 
             #             temp_theta= np.log(temp_theta)-temp[:,0]
             temp2 = series_k_org[:-n_test]

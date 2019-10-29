@@ -3,9 +3,9 @@ import math
 import numpy as np
 
 def main():
-    gt = 'nn3_no_meta_test_mirror.csv'
-    theta = 'theta_25_hT_nn3_4_test.csv' #12 18.666018379979093
-    horizon = -18
+    gt = 'M3C_yearly.csv'
+    theta = 'theta_25_hT_m3y4.csv'  # 12: 19.281231932025392
+    horizon = -6
     horizon_index = 2
     mapes = list()
     with open(gt) as f:

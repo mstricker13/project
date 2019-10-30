@@ -16,7 +16,8 @@ def main():
         ground_truth = gt_val[-horizon_val:]
         smape = calc_smape(prediction, ground_truth, horizon_val)
         mapes.append(smape)
-    smape_file = open(os.path.join('data', 'output', 'mean_sMape.txt'), 'w')
+    # TODO
+    smape_file = open(os.path.join('data', 'output', 'm3_other', 'mean_sMape.txt'), 'w')
     smape_file.write('Mean over all sMapes = ' + str(np.mean(mapes)) + '\n')
     i = 1
     for value in mapes:
@@ -27,7 +28,8 @@ def main():
 
 def load_data():
     sequences_season = list()
-    with open(os.path.join('data', 'output', 'final_25_season_horg.csv')) as f:
+    # TODO
+    with open(os.path.join('data', 'output', 'm3_other', 'final_25_season_horg.csv')) as f:
         content = f.read()
     for line in content.split('\n'):
         if not (line == ''):
@@ -36,7 +38,8 @@ def load_data():
             sequences_season.append(values)
 
     sequences_trend = list()
-    with open(os.path.join('data', 'output', 'final_25_trend_horg.csv')) as f:
+    # TODO
+    with open(os.path.join('data', 'output', 'm3_other', 'final_25_trend_horg.csv')) as f:
         content = f.read()
     for line in content.split('\n'):
         if not (line == ''):
@@ -45,24 +48,28 @@ def load_data():
             sequences_trend.append(values)
 
     sequences_gt = list()
-    with open(os.path.join('data', 'cif.csv')) as f:
+    # TODO
+    with open(os.path.join('data', 'M3C_other.csv')) as f:
         content = f.read()
     for line in content.split('\n'):
         if not (line == ''):
             values = line.split(',')
-            values = [float(val) for val in values[3:] if val != '']
+            # TODO
+            values = [float(val) for val in values[6:] if val != '']
             sequences_gt.append(values)
     return sequences_trend, sequences_season, sequences_gt
 
 
 def get_horizon():
     sequences_horizon = list()
-    with open(os.path.join('data', 'cif.csv')) as f:
+    # TODO
+    with open(os.path.join('data', 'M3C_other.csv')) as f:
         content = f.read()
     for line in content.split('\n'):
         if not (line == ''):
             values = line.split(',')
-            horizon = int(values[1])
+            # TODO
+            horizon = int(values[2])
             sequences_horizon.append(horizon)
     return sequences_horizon
 

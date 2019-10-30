@@ -30,8 +30,10 @@ ts =stats.ts
 from statsmodels.tsa.seasonal import seasonal_decompose
 
 d ="data" # path where data file resides
-data = pd.read_csv(os.path.join(d, "cif.csv"), index_col=[0, 1, 2], header=None)
-predictions = pd.read_csv(os.path.join(d, 'theta_25_cif_horg.csv'), index_col=0, skiprows=[1])
+# TODO
+data = pd.read_csv(os.path.join(d, "M3C_other.csv"), index_col=[0, 1, 2, 3, 4, 5], header=None)
+# TODO
+predictions = pd.read_csv(os.path.join(d, 'theta_25_hT_m3o4.csv'), index_col=0, skiprows=[1])
 data_length = data.shape[0]
 
 def make_input(data,window_size,horizon=1):
@@ -90,18 +92,21 @@ def nonov_make_k_input(data, window_size, horizon):
 
 def run():
     with tqdm(total=data_length) as pbar:
-        max_test_samples = 12  # data.index.get_level_values(1).values[counter]
+        # TODO
+        max_test_samples = 8  # data.index.get_level_values(1).values[counter]
 
         final_predictions = np.zeros([data_length, max_test_samples])
         for y in range(data_length):
 
             #             n_test = data.iloc[y].values[2] #----cif
-            custom_horizon = data.index.get_level_values(1).values[y]
+            # TODO
+            custom_horizon = data.index.get_level_values(2).values[y]
             n_test = custom_horizon  # number of test samples in the data
             horizon = custom_horizon  # can be varied, horizon to be predicted by one input window
 
             #window_size = 25  # number of past values to be used for prediction
-            window_size = 7
+            # TODO
+            window_size = 9
 
             nn_val = np.asarray(data.iloc[y].dropna().values, dtype=float)  # data in one time series
             rr = nn_val.size
@@ -114,9 +119,10 @@ def run():
             series = np.log(temp1)
             #             series = temp1
 
-            frequency = 7  # should be adjusted according to dataset
-            if temp1.size < 2 * frequency:
-                frequency = 2
+            # TODO
+            frequency = 4  # should be adjusted according to dataset
+            #if temp1.size < 2 * frequency:
+            #    frequency = 2
 
             result = stl(ts(series, frequency=frequency), "periodic")
             temp = pandas2ri.ri2py(result.rx2('time.series'))
@@ -215,7 +221,8 @@ def run():
 
             model = Model(inputs=[inputs_n, inputs_k], outputs=net)
             opt = Adam(lr=0.0001)
-            callback = ModelCheckpoint(filepath=os.path.join(d, 'output', str(y) + 't_nn5.h5'), monitor='val_loss', save_best_only=True,
+            # TODO
+            callback = ModelCheckpoint(filepath=os.path.join(d, 'output', 'm3_other', str(y) + 't_m3.h5'), monitor='val_loss', save_best_only=True,
                                        save_weights_only=True)
 
             model.compile(loss='mean_squared_error', optimizer=opt)
@@ -223,10 +230,12 @@ def run():
             model.fit({'input_n': train_input, 'input_k': k_train}, y_train, validation_data=[[val_input, k_val], y_val],
                       callbacks=[callback], shuffle=True, batch_size=8, epochs=100, verbose=0)
 
-            model.load_weights(os.path.join(d, 'output', str(y) + 't_nn5.h5'))
+            # TODO
+            model.load_weights(os.path.join(d, 'output', 'm3_other', str(y) + 't_m3.h5'))
             pred = model.predict({'input_n': test_input, 'input_k': k_test})
             pred = pred.reshape(pred.size)[:n_test]
 
             final_predictions[y, :n_test] = pred.reshape(n_test)
             pbar.update(1)
-        np.savetxt(os.path.join(d, 'output', 'final_25_trend_horg.csv'), final_predictions, fmt='%1.3f', delimiter=',')
+        # TODO
+        np.savetxt(os.path.join(d, 'output', 'm3_other', 'final_25_trend_horg.csv'), final_predictions, fmt='%1.3f', delimiter=',')

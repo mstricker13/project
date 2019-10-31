@@ -6,8 +6,10 @@ import numpy as np
 
 
 def main():
-    season(gt_path, expert_path, value_start_index, max_horizon, horizon_index, window_s, freq, out_path)
-    trend(gt_path, expert_path, value_start_index, max_horizon, horizon_index, window_s, freq, out_path)
+    season(gt_path, expert_path, value_start_index, max_horizon, horizon_index, window_s, freq, out_path,
+           num_epochs_season, bs_season, l2_season, lr_season, num_filters_season, kernel_size_season)
+    trend(gt_path, expert_path, value_start_index, max_horizon, horizon_index, window_s, freq, out_path,
+          num_epochs_trend, bs_trend, l2_trend, lr_trend, num_filters_trend, kernel_size_trend)
     trend_list, season_list, gt_list = load_data()
     horizon_list = get_horizon()
     mapes = list()
@@ -92,9 +94,9 @@ def calc_smape(prediction, ground_truth, horizon):
 if __name__ == '__main__':
 
     # call like this:
-    # python main_var.py --m3_other_1 --M3C_other.csv --theta_25_hT_m3o4.csv --6 --2 --9 --4
+    # python main_var.py m3_other_1 M3C_other.csv theta_25_hT_m3o4.csv 6 2 9 4 100 100 8 8 0.03 0.05 0.0001 0.0001 64 32 3 3
 
-    if len(sys.argv) != 8:
+    if len(sys.argv) != 20:
         print('Not enough arguments!')
         sys.exit()
 
@@ -130,4 +132,46 @@ if __name__ == '__main__':
 
     freq = int(sys.argv[7])  # frequency e.g. 4
 
+    num_epochs_season = int(sys.argv[8])  # number of epochs e.g. 100
+
+    num_epochs_trend = int(sys.argv[9])  # number of epochs e.g. 100
+
+    bs_season = int(sys.argv[10])  # batch size
+
+    bs_trend = int(sys.argv[11])
+
+    l2_season = float(sys.argv[12])  # l2 regularizer
+
+    l2_trend = float(sys.argv[13])
+
+    lr_season = float(sys.argv[14])  # learning rate
+
+    lr_trend = float(sys.argv[15])
+
+    num_filters_season = int(sys.argv[16])  # number of filters in convolution
+
+    num_filters_trend = int(sys.argv[17])
+
+    kernel_size_season = int(sys.argv[18])  # kernel size of convolution
+
+    kernel_size_trend = int(sys.argv[19])
+
     main()
+
+    para_file = open(os.path.join(out_path, 'parameters.txt'), 'w')
+    para_file.write('window_size = ' + str(window_s) + '\n' +
+                    'frequency = ' + str(freq) + '\n' +
+                    'num_epochs_season = ' + str(num_epochs_season) + '\n' +
+                    'num_epochs_trend = ' + str(num_epochs_trend) + '\n' +
+                    'batch_size_season = ' + str(bs_season) + '\n' +
+                    'batch_size_trend = ' + str(bs_trend) + '\n' +
+                    'l2_season = ' + str(l2_season) + '\n' +
+                    'l2_trend = ' + str(l2_trend) + '\n' +
+                    'learning_rate_season = ' + str(lr_season) + '\n' +
+                    'learning_rate_trend = ' + str(lr_trend) + '\n' +
+                    'num_filters_season = ' + str(num_filters_season) + '\n' +
+                    'num_filters_trend = ' + str(num_filters_trend) + '\n' +
+                    'kernel_size_season = ' + str(kernel_size_season) + '\n' +
+                    'kernel_size_trend = ' + str(kernel_size_trend)
+                    )
+    para_file.close()

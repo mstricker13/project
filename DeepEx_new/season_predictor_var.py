@@ -124,7 +124,8 @@ def nonov_make_k_input(data, window_size, horizon):
     return output.reshape(output.shape[0], horizon, 1)
 
 
-def run(gt_path, expert_path, value_start_index, max_horizon, horizon_index, window_s, freq, out_path):
+def run(gt_path, expert_path, value_start_index, max_horizon, horizon_index, window_s, freq, out_path, num_epochs,
+        bs, l2_val, lr_val, num_filter, kernel_size):
     meta_array = list(range(0, value_start_index))  # create list which contains the indices of meta information
     data = pd.read_csv(gt_path, index_col=meta_array, header=None)
     predictions = pd.read_csv(expert_path, index_col=0, skiprows=[1])  # The 0 and 1 are always the same for all expert
@@ -230,24 +231,24 @@ def run(gt_path, expert_path, value_start_index, max_horizon, horizon_index, win
 
             inputs_n = Input(batch_shape=(None, window_size + horizon, 1), name='input_n')
             inputs_k = Input(batch_shape=(None, horizon), name='input_k')
-            branch_0 = Conv1D(64, 3, strides=1, padding='same', activation='relu', kernel_initializer=glorot_uniform(1))(
+            branch_0 = Conv1D(num_filter, kernel_size, strides=1, padding='same', activation='relu', kernel_initializer=glorot_uniform(1))(
                 inputs_n)
-            branch_0 = Conv1D(64, 3, strides=1, padding='same', activation='relu', kernel_initializer=glorot_uniform(1))(
+            branch_0 = Conv1D(num_filter, kernel_size, strides=1, padding='same', activation='relu', kernel_initializer=glorot_uniform(1))(
                 branch_0)
             branch_0 = Flatten()(branch_0)
-            net = Dense(horizon, name='dense_final', activity_regularizer=regularizers.l2(0.03))(
+            net = Dense(horizon, name='dense_final', activity_regularizer=regularizers.l2(l2_val))(
                 branch_0)  # activity regularizer value based on data
             net = add([net, inputs_k])
 
             model = Model(inputs=[inputs_n, inputs_k], outputs=net)
-            opt = Adam(lr=0.0001)
+            opt = Adam(lr=lr_val)
             callback = ModelCheckpoint(filepath=os.path.join(out_path, str(y) + 's.h5'), monitor='val_loss', save_best_only=True,
                                        save_weights_only=True)
 
             model.compile(loss='mean_squared_error', optimizer=opt)
 
             model.fit({'input_n': train_input, 'input_k': k_train}, y_train, validation_data=[[val_input, k_val], y_val],
-                      callbacks=[callback], batch_size=8, shuffle=True, epochs=100, verbose=0)
+                      callbacks=[callback], batch_size=bs, shuffle=True, epochs=num_epochs, verbose=0)
 
             model.load_weights(os.path.join(out_path, str(y) + 's.h5'))
             pred = model.predict({'input_n': test_input, 'input_k': k_test})

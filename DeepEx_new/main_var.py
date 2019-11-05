@@ -12,6 +12,7 @@ def main():
           num_epochs_trend, bs_trend, l2_trend, lr_trend, num_filters_trend, kernel_size_trend)
     trend_list, season_list, gt_list = load_data()
     horizon_list = get_horizon()
+    skip_list = get_skip_list()
     mapes = list()
     for trend_val, season_val, gt_val, horizon_val in zip(trend_list, season_list, gt_list, horizon_list):
         prediction = np.exp(np.array(trend_val) + np.array(season_val))
@@ -81,6 +82,17 @@ def get_maximum_horizon():
             if horizon > cur_max:
                 cur_max = horizon
     return cur_max
+
+
+def get_skip_list():
+    skip_list = list()
+    with open(os.path.join(out_path, 'skipped.csv')) as f:
+        content = f.read()
+    for line in content.split('\n'):
+        if not (line == ''):
+            value = int(line)
+            skip_list.append(value)
+    return skip_list
 
 
 def calc_smape(prediction, ground_truth, horizon):

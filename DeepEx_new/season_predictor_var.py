@@ -270,5 +270,8 @@ def run(gt_path, expert_path, value_start_index, max_horizon, horizon_index, win
             except ValueError:
                 print('Too short time series skip ' + str(y))
                 skipped.append(y)
+            except OSError:
+                print('434: RuntimeWarning: Can save best model only with val_loss available, skipping. Too short?!')
+                skipped.append(y)
         np.savetxt(os.path.join(out_path, 'final_25_season_horg.csv'), final_predictions, fmt='%1.3f', delimiter=',')
         np.savetxt(os.path.join(out_path, 'skipped.csv'), skipped, fmt='%1.3f', delimiter=',')

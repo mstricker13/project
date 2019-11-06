@@ -120,7 +120,6 @@ def run(gt_path, expert_path, value_start_index, max_horizon, horizon_index, win
                 for val in temp1:
                     if val <= 0:
                         print('Time Series has negative values, skipping!')
-                        skipped.append(y)
                         continue
                 series = np.log(temp1)
                 #             series = temp1

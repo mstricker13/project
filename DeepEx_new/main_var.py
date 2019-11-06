@@ -90,7 +90,7 @@ def get_skip_list():
         content = f.read()
     for line in content.split('\n'):
         if not (line == ''):
-            value = int(line)
+            value = int(float(line))
             skip_list.append(value)
     return skip_list
 

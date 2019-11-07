@@ -117,10 +117,13 @@ def run(gt_path, expert_path, value_start_index, max_horizon, horizon_index, win
                 epsilon = 0.05
                 temp1[temp1 < epsilon] = temp1[temp1 < epsilon] + 0.05
                 # check if negative values are contained
+                neg_val_flag = False
                 for val in temp1:
                     if val <= 0:
                         print('Time Series has negative values, skipping!')
-                        continue
+                        neg_val_flag = True
+                if neg_val_flag:
+                    continue
                 series = np.log(temp1)
                 #             series = temp1
 

@@ -85,45 +85,6 @@ def nonov_make_k_input(data, window_size, horizon):
         output[i:i + 1, :] = data[(i * horizon) + window_size:(i * horizon) + window_size + horizon]
     return output.reshape(output.shape[0], horizon, 1)
 
-
-def nonov_make_input(data, window_size, horizon=1):
-    length = data.shape[0] - window_size
-    loop = length // horizon
-    extra = length % horizon
-
-    data = np.append(data, np.zeros([horizon - extra]))
-
-    if extra == 0:
-        i_val = loop
-    else:
-        i_val = loop + 1
-
-    output = np.zeros([i_val, window_size])
-    y = np.zeros([i_val, horizon])
-    for i in range(i_val):
-        output[i:i + 1, :] = data[i * horizon:(i * horizon) + window_size]
-        y[i, :] = data[(i * horizon) + window_size:(i * horizon) + window_size + horizon]
-
-    return output.reshape(output.shape[0], window_size, 1), y
-
-
-def nonov_make_k_input(data, window_size, horizon):
-    length = data.shape[0] - window_size
-    loop = length // horizon
-    extra = length % horizon
-    data_app = np.repeat(data[-1], extra)
-    data = np.append(data, data_app)
-
-    if extra == 0:
-        i_val = loop
-    else:
-        i_val = loop + 1
-    output = np.zeros([i_val, horizon])
-    for i in range(i_val):
-        output[i:i + 1, :] = data[(i * horizon) + window_size:(i * horizon) + window_size + horizon]
-    return output.reshape(output.shape[0], horizon, 1)
-
-
 def run(gt_path, expert_path, value_start_index, max_horizon, horizon_index, window_s, freq, out_path, num_epochs,
         bs, l2_val, lr_val, num_filter, kernel_size):
     meta_array = list(range(0, value_start_index))  # create list which contains the indices of meta information

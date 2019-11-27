@@ -24,6 +24,8 @@ def main():
 
     for i, j, y in os.walk(output):
         print(i)
+        #if i != 'data/output/m3_quarterly_5':
+        #    continue
         subfolders = i.split('/')
         if len(subfolders) == 3:
             foldername = subfolders[2]
@@ -53,14 +55,14 @@ def main():
                         print('list not same?!')
                         sys.exit()
                     skipped_values = skipped_content.split('\n')[:-1]
-                    skipped_values = [int(float(val)) for val in skipped_values]
+                    skipped_values = [int(float(val))+1 for val in skipped_values]
                     theta_true_mapes = list()
                     true_mapes = list()
                     smape_file = open(os.path.join(i, 'true_result.txt'), 'w')
                     smape_file.write('Theta,Prediction\n')
                     counter = 1
                     for theta_mapes, predicted_mapes in zip(theta_list[1:-1], mean_smape_list[1:-1]):
-                        if i not in skipped_values:
+                        if counter not in skipped_values:
                             theta_val = float(theta_mapes.split(' ')[-1])
                             predicted_val = float(predicted_mapes.split(' ')[-1])
                             theta_true_mapes.append(theta_val)
